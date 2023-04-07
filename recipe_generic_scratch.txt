@@ -1,0 +1,47 @@
+eternal shadow | procure=reversible_convert
+10 crystallized shadow
+
+ink of the sea
+2 azure pigment
+
+5 azure pigment | procure=mill
+2 deadnettle
+
+5 azure pigment | procure=mill
+2 fire leaf
+
+5 azure pigment | procure=mill
+2 fire seed
+
+3 azure pigment | procure=mill
+lichbloom
+
+eternal belt buckle | procure=smith
+4 saronite bar + eternal earth + eternal water + eternal shadow
+
+baked manta ray | procure=cook
+imperial manta ray
+
+ethereal oil | procure=alchemy
+2 glassfin minnow
+
+goblin-machined piston | procure=vendor source=roxi cash=1000
+
+salvaged iron golem parts | procure=vendor source=roxi cash=3000
+
+elementium-plated exhaust pipe | procure=vendor source=roxi cash=1500
+
+25 heavy oil + 45 light oil + 55 petrol | procure=advanced oil refining | seconds=5
+50 water + 100 crude oil
+
+65 heavy oil + 20 light oil + 10 petrol | procure=coal liquefaction | seconds=5
+10 coal + 50 water
+
+20 petrol | procure=light cracking | seconds=2
+30 water + 30 light oil
+
+10 lubricant | procure=chemical seconds=1
+10 heavy oil
+
+40 light oil | procure=heavy cracking | seconds=2
+30 water + 40 heavy oil
