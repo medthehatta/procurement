@@ -186,7 +186,7 @@ class FormalVector:
         return total
 
     def __getitem__(self, item):
-        return self.components[item]
+        return self.components.get(item, 0)
 
     def __add__(self, other):
         components = {}
