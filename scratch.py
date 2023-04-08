@@ -9,8 +9,8 @@ from procurement import Registry
 
 class Vendor(Buy):
 
-    def __init__(self, product, cash, source):
-        super().__init__(product, cash)
+    def __init__(self, product, cost, source):
+        super().__init__(product, cost)
         self.source = source
 
 

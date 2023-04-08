@@ -259,12 +259,12 @@ class CraftHeterogeneous(Craft):
 class Buy(Procurement):
 
     @classmethod
-    def create(cls, product, cash, **kwargs):
-        return cls(product, cash, **kwargs)
+    def create(cls, product, cost, **kwargs):
+        return cls(product, cost, **kwargs)
 
-    def __init__(self, product, cash):
+    def __init__(self, product, cost):
         self.product = product
-        self.cash = float(cash)
+        self.cost = float(cost)
 
     def product_names(self):
         (name, _, _) = self.product.pure()
@@ -281,7 +281,7 @@ class Buy(Procurement):
         (_, amount, _) = demand.pure()
 
         return self._requires(
-            cost=amount/count * self.cash * Cost.cash,
+            cost=amount/count * self.cost * Cost.cost,
         )
 
 
