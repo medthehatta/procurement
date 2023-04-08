@@ -1,3 +1,9 @@
+20 petrol | procure=light cracking | seconds=2
+30 water + 30 light oil
+
+65 heavy oil + 20 light oil + 10 petrol | procure=coal liquefaction | seconds=5
+10 coal + 50 water
+
 eternal shadow | procure=reversible_convert
 10 crystallized shadow
 
@@ -34,11 +40,6 @@ elementium-plated exhaust pipe | procure=vendor source=roxi cost=1500
 25 heavy oil + 45 light oil + 55 petrol | procure=advanced oil refining | seconds=5
 50 water + 100 crude oil
 
-65 heavy oil + 20 light oil + 10 petrol | procure=coal liquefaction | seconds=5
-10 coal + 50 water
-
-20 petrol | procure=light cracking | seconds=2
-30 water + 30 light oil
 
 10 lubricant | procure=chemical seconds=1
 10 heavy oil
@@ -54,4 +55,5 @@ icethorn
 
 1.5 pygmy oil
 pygmy suckerfish
+
 
