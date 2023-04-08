@@ -72,6 +72,9 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             (process, process.requirements(demand))
             for process in options
         ]
+        # FIXME: some kind of bug here.  If cost_evaluator is
+        # x["cost"]["seconds"], I get a more expensive total process for 200
+        # petrol.
         (process, requirements) = min(
             candidates,
             key=lambda x: cost_evaluator(x[1]),
