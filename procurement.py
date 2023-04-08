@@ -1,3 +1,5 @@
+from functools import reduce
+import itertools
 import re
 
 from formal_vector import FormalVector
@@ -322,3 +324,111 @@ class Gather(Procurement):
         return _requires(
             cost=amount/count * self.seconds * Cost.seconds,
         )
+
+
+def _positive(vec):
+    return vec.sum(
+        vec.project(k) for (k, v) in vec.components.items() if v > 0
+    )
+
+
+def _sum(seq):
+    s = iter(seq)
+    first = next(s)
+    return reduce(lambda acc, x: acc + x, s, first)
+
+
+def _join_opt_results(results):
+    # Assumes the values of each result dict are monoids
+    return {k: _sum(x[k] for x in results) for k in _opt_result()}
+
+
+def _opt_result(processes=None, raw=None, cost=None, evaluated_cost=None):
+    processes = processes or []
+    raw = raw or Ingredients.zero()
+    cost = cost or Costs.zero()
+    evaluated_cost = evaluated_cost or 0
+    return {
+        "processes": processes,
+        "raw": raw,
+        "cost": cost,
+        "evaluated_cost": evaluated_cost,
+    }
+
+
+def optimize(registry, demand, cost_evaluator=None, path=None):
+
+    if cost_evaluator is None:
+        cost_evaluator = lambda x: x["cost"].normsquare()
+
+    if len(demand.nonzero_components) == 0:
+        return _opt_result()
+
+    elif len(demand.nonzero_components) == 1:
+        options = registry.lookup(demand)
+
+        # If there are no ways to meet this demand, the demand itself is
+        # fundamental
+        if not options:
+            return _opt_result(raw=demand)
+
+        # Otherwise, optimize the process
+        # FIXME: first pass, take the option with lowest cost
+        candidates = [
+            (
+                process,
+                reqs := process.requirements(demand),
+                cost_evaluator(reqs),
+            )
+            for process in options
+        ]
+        (process, requirements, evaluated_cost) = min(
+            candidates,
+            key=lambda x: x[2],
+        )
+
+        # Compute the data for this process
+        (name, _, _) = demand.pure()
+        path = path or [name]
+        ingredients = requirements["ingredients"]
+        excess = requirements["excess"]
+        cost = requirements["cost"]
+        process_data = {
+            "component": path,
+            "process": type(process),
+            "demand": demand,
+            "ingredients": ingredients,
+            "excess": excess,
+            "cost": cost,
+            "evaluated_cost": evaluated_cost,
+        }
+        base = _opt_result(
+            processes=[process_data],
+            cost=cost,
+            evaluated_cost=evaluated_cost,
+        )
+
+        # Join this to optimized processes for the components
+        missing = _positive(ingredients - excess)
+        component_processes = optimize(
+            registry,
+            missing,
+            cost_evaluator=cost_evaluator,
+            path=path,
+        )
+        return _join_opt_results([base, component_processes])
+
+    # If our input is a combination of components, optimize each separately and
+    # add the results
+    else:
+        path = path or []
+        component_processes = [
+            optimize(
+                registry,
+                demand.project(k),
+                cost_evaluator=cost_evaluator,
+                path=path+[k],
+            )
+            for k in demand.nonzero_components
+        ]
+        return _join_opt_results(component_processes)
