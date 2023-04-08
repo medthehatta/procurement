@@ -19,20 +19,8 @@ class Vendor(Buy):
         self.source = source
 
 
-class CoalLiquefaction(CraftHeterogeneous):
-    pass
-
-
-class AdvancedOilRefining(CraftHeterogeneous):
-    pass
-
-
-class HeavyOilCracking(CraftHeterogeneous):
-    pass
-
-
-class Chemical(CraftHomogeneous):
-    pass
+def procure_alias(kind, name):
+    return type(name, (kind,), {})
 
 
 def i(n):
@@ -43,10 +31,10 @@ registry = Registry(
     kind=Ingredients,
     procurements={
         "vendor": Vendor,
-        "coal liquefaction": CoalLiquefaction,
-        "advanced oil refining": AdvancedOilRefining,
-        "chemical": Chemical,
-        "heavy cracking": HeavyOilCracking,
+        "coal liquefaction": procure_alias(CraftHeterogeneous, "CoalLiquefaction"),
+        "advanced oil refining": procure_alias(CraftHeterogeneous, "AdvancedOilRefining"),
+        "chemical": procure_alias(CraftHomogeneous, "Chemical"),
+        "heavy cracking": procure_alias(CraftHomogeneous, "HeavyOilCracking"),
     },
     default_procurement=Craft,
 )
