@@ -50,7 +50,10 @@ def _positive(vec):
     )
 
 
-def optimize(registry, demand, path=None):
+def optimize(registry, demand, cost_evaluator=None, path=None):
+
+    if cost_evaluator is None:
+        cost_evaluator = lambda x: x["cost"].normsquare()
 
     if len(demand.nonzero_components) == 0:
         return {"processes": [], "raw": registry.kind.zero()}
@@ -58,7 +61,8 @@ def optimize(registry, demand, path=None):
     elif len(demand.nonzero_components) == 1:
         options = registry.lookup(demand)
 
-        # If there are no ways to meet this demand, the demand itself is fundamental
+        # If there are no ways to meet this demand, the demand itself is
+        # fundamental
         if not options:
             return {"processes": [], "raw": demand, "cost": Costs.zero()}
 
@@ -68,7 +72,10 @@ def optimize(registry, demand, path=None):
             (process, process.requirements(demand))
             for process in options
         ]
-        (process, requirements) = min(candidates, key=lambda x: x[1]["cost"].normsquare())
+        (process, requirements) = min(
+            candidates,
+            key=lambda x: cost_evaluator(x[1]),
+        )
 
         # Compute the data for this process
         (name, _, _) = demand.pure()
@@ -93,7 +100,12 @@ def optimize(registry, demand, path=None):
 
         # Join this to optimized processes for the components
         missing = _positive(ingredients - excess)
-        component_processes = optimize(registry, missing, path=path)
+        component_processes = optimize(
+            registry,
+            missing,
+            cost_evaluator=cost_evaluator,
+            path=path,
+        )
         return {
             "processes": base["processes"] + component_processes["processes"],
             "raw": registry.kind.sum(x["raw"] for x in [base, component_processes]),
@@ -105,7 +117,12 @@ def optimize(registry, demand, path=None):
     else:
         path = path or []
         component_processes = [
-            optimize(registry, demand.project(k), path=path+[k])
+            optimize(
+                registry,
+                demand.project(k),
+                cost_evaluator=cost_evaluator,
+                path=path+[k],
+            )
             for k in demand.nonzero_components
         ]
         return {
