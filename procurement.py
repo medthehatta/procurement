@@ -32,7 +32,7 @@ class Registry:
     def lookup(self, item):
         if isinstance(item, self.kind):
             (name, _, _) = item.pure()
-            return self.registry[name]
+            return self.registry.get(name, [])
         elif isinstance(item, str):
             return self.lookup(self.kind.lookup(item))
         else:
