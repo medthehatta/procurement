@@ -3,7 +3,7 @@ import itertools
 
 class Combined:
 
-    def __init__(self, *items):
+    def __init__(self, items):
         self.items = items
 
     def __repr__(self):
@@ -22,47 +22,61 @@ class Combined:
         return self.items[key]
 
     @classmethod
-    def flat(cls, seq):
+    def new(cls, lst):
         s = itertools.chain.from_iterable(
-            x.items if isinstance(x, cls) else [x] for x in seq
+            x.items if isinstance(x, cls) else [x] for x in lst
         )
-        lst = list(s)
-        if not lst:
-            return Empty
-        else:
-            return cls(*lst)
+        return cls._new(s)
+
+    @classmethod
+    def of(cls, *items):
+        return cls.new(items)
+
+    @classmethod
+    def flat(cls, seq):
+        lst = list(seq)
+        return cls.new(lst)
 
 
 class Impossible_(Combined):
     pass
 
 
-Impossible = Impossible_()
+Impossible = Impossible_([])
 
 
 class Empty_(Combined):
     pass
 
 
-Empty = Empty_()
+Empty = Empty_([])
 
 
 class Or(Combined):
 
-    def reduced(self):
-        return Or.flat(
-            x for x in self.items
-            if not (x is Impossible or x is Empty)
-        )
+    @classmethod
+    def _new(cls, items):
+        contents = [x for x in items if not (x is Impossible or x is Empty)]
+        if contents:
+            return cls(contents)
+        else:
+            return Empty
 
 
 class And(Combined):
 
-    def reduced(self):
-        if any(x is Impossible or x is Empty for x in self.items):
-            return Impossible
-        else:
-            return self
+    @classmethod
+    def _new(cls, items):
+        contents = []
+        for x in items:
+            if x is Impossible:
+                return Impossible
+            elif x is Empty:
+                continue
+            else:
+                contents.append(x)
+
+        return cls(contents)
 
 
 def dnf(tree):
@@ -74,5 +88,5 @@ def dnf(tree):
         return Or.flat(And.flat(x) for x in product)
 
     else:
-        return Or(And(tree))
+        return Or.of(And.of(tree))
 
