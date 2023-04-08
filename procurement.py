@@ -2,6 +2,8 @@ from functools import reduce
 import itertools
 import re
 
+from combined import And, Or, Empty, Impossible
+from combined import dnf
 from formal_vector import FormalVector
 
 
