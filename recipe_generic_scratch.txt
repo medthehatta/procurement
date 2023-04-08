@@ -45,3 +45,13 @@ elementium-plated exhaust pipe | procure=vendor source=roxi cost=1500
 
 40 light oil | procure=heavy cracking | seconds=2
 30 water + 40 heavy oil
+
+2 flask of pure mojo
+7 icethorn + 3 pygmy oil + frost lotus + enchanted vial
+
+icethorn
+2 icethorn pellets
+
+1.5 pygmy oil
+pygmy suckerfish
+
