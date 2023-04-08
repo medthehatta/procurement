@@ -40,10 +40,10 @@ class Registry:
         else:
             raise LookupError(f"Cannot look up {item}")
 
-    def register(self, entry):
-        for product_name in entry.product_names():
+    def register(self, procurement):
+        for product_name in procurement.product_names():
             self.registry[product_name] = \
-                self.registry.get(product_name, []) + [entry]
+                self.registry.get(product_name, []) + [procurement]
         return self
 
     def from_lines(self, lines, populate=None, fuzzy=False):
