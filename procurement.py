@@ -340,9 +340,26 @@ def _sum(seq):
     return reduce(lambda acc, x: acc + x, s, first)
 
 
-def _join_opt_results(results):
-    # Assumes the values of each result dict are monoids
-    return {k: _sum(x[k] for x in results) for k in _opt_result()}
+def join_opt_results(results):
+    # Traverse Ands looking for And "leaves"
+    if isinstance(results, And):
+
+        # If we are at an And "leaf", we can combine its children
+        if all(isinstance(r, dict) for r in results):
+            # Assumes the values of each result dict are monoids
+            joined = {k: _sum(x[k] for x in results) for k in _opt_result()}
+            return joined
+
+        # Otherwise, just traverse
+        else:
+            return And.flat(join_opt_results(x) for x in results)
+
+    # Traverse Ors
+    elif isinstance(results, Or):
+        return Or.flat(join_opt_results(x) for x in results)
+
+    else:
+        return results
 
 
 def _opt_result(processes=None, raw=None, cost=None, evaluated_cost=None):
@@ -368,7 +385,7 @@ def _optimize_leaf(
     path=None,
 ):
     (name, _, _) = demand.pure()
-    path = path or [name]
+    path = path + [name] if path else [name]
     ingredients = requirements["ingredients"]
     excess = requirements["excess"]
     cost = requirements["cost"]
@@ -395,7 +412,7 @@ def _optimize_leaf(
         cost_evaluator=cost_evaluator,
         path=path,
     )
-    return _join_opt_results([base, component_processes])
+    return join_opt_results(And.of(base, component_processes))
 
 
 def optimize(registry, demand, cost_evaluator=None, path=None):
@@ -404,7 +421,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         cost_evaluator = lambda x: x["cost"].normsquare()
 
     if len(demand.nonzero_components) == 0:
-        return _opt_result()
+        return Or.of(_opt_result())
 
     elif len(demand.nonzero_components) == 1:
         options = registry.lookup(demand)
@@ -412,11 +429,10 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         # If there are no ways to meet this demand, the demand itself is
         # fundamental
         if not options:
-            return _opt_result(raw=demand)
+            return Or.of(_opt_result(raw=demand))
 
         # Otherwise, optimize the process
         else:
-            # FIXME: first pass, take the option with lowest cost
             candidates = [
                 (
                     process,
@@ -425,18 +441,18 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
                 )
                 for process in options
             ]
-            (process, requirements, evaluated_cost) = min(
-                candidates,
-                key=lambda x: x[2],
-            )
-            return _optimize_leaf(
-                registry=registry,
-                cost_evaluator=cost_evaluator,
-                demand=demand,
-                process=process,
-                requirements=requirements,
-                evaluated_cost=evaluated_cost,
-                path=path
+            return Or.flat(
+                _optimize_leaf(
+                    registry=registry,
+                    cost_evaluator=cost_evaluator,
+                    demand=demand,
+                    process=process,
+                    requirements=requirements,
+                    evaluated_cost=evaluated_cost,
+                    path=path,
+                )
+                for (process, requirements, evaluated_cost)
+                in candidates
             )
 
     # If our input is a combination of components, optimize each separately and
@@ -452,4 +468,4 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             )
             for k in demand.nonzero_components
         ]
-        return _join_opt_results(component_processes)
+        return join_opt_results(And.flat(component_processes))
