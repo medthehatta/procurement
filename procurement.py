@@ -346,7 +346,7 @@ def join_opt_results(results):
 
         # If we are at an And "leaf", we can combine its children
         if all(isinstance(r, dict) for r in results):
-            # Assumes the values of each result dict are monoids
+            # Assumes the values from each result dict are monoids
             joined = {k: _sum(x[k] for x in results) for k in _opt_result()}
             return joined
 
@@ -405,7 +405,7 @@ def _optimize_leaf(
     )
 
     # Join this to optimized processes for the components
-    missing = _positive(ingredients - excess)
+    missing = ingredients - excess
     component_processes = optimize(
         registry,
         missing,
@@ -429,14 +429,19 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         # If there are no ways to meet this demand, the demand itself is
         # fundamental
         if not options:
-            return Or.of(_opt_result(raw=demand))
+            # Take just the positive part of the demand; if we have negative
+            # components of demand we don't require it, it's excess.
+            return Or.of(_opt_result(raw=_positive(demand)))
 
         # Otherwise, optimize the process
         else:
             candidates = [
                 (
                     process,
-                    reqs := process.requirements(demand),
+                    # Take just the positive part of the demand; if we have
+                    # negative components of demand we don't require it, it's
+                    # excess.
+                    reqs := process.requirements(_positive(demand)),
                     cost_evaluator(reqs),
                 )
                 for process in options
