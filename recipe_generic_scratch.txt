@@ -72,4 +72,344 @@ icethorn
 1.5 pygmy oil
 pygmy suckerfish
 
+eternal shadow
+10 crystallized shadow
 
+eternal water
+10 crystallized water
+
+eternal fire
+10 crystallized fire
+
+eternal air
+10 crystallized air
+
+eternal life
+10 crystallized life
+
+greater planar essence
+3 lesser planar essence
+
+greater cosmic essence
+3 lesser cosmic essence
+
+10 crystallized shadow
+eternal shadow
+
+10 crystallized water
+eternal water
+
+10 crystallized fire
+eternal fire
+
+10 crystallized air
+eternal air
+
+10 crystallized life
+eternal life
+
+3 lesser planar essence
+greater planar essence
+
+3 lesser cosmic essence
+greater cosmic essence
+
+2 flask of the frost wyrm
+5 icethorn + 5 lichbloom + frost lotus + enchanted vial
+
+2 flask of endless rage
+7 lichbloom + 3 goldclover + frost lotus + enchanted vial
+
+2 flask of stoneblood
+7 lichbloom + 3 crystallized life + frost lotus + enchanted vial
+
+firecracker salmon
+glacial salmon + northern spices
+
+elixir of greater agility
+sungrass + goldthorn + crystal vial
+
+titanium bar
+8 saronite bar
+
+titanium bar
+2 titanium ore
+
+titansteel bar
+3 titanium bar + eternal fire + eternal earth + eternal shadow
+
+indestructible potion
+2 icethorn + imbued vial
+
+saronite bar
+2 saronite ore
+
+potion of speed
+2 adder's tongue + pygmy oil + imbued vial
+
+potion of wild magic
+2 lichbloom + pygmy oil + imbued vial
+
+titansteel spellblade
+6 titansteel bar + 6 infinite dust + 2 frozen orb
+
+titansteel bar
+3 titanium bar + eternal fire + eternal earth + eternal shadow
+
+glyph of wild growth
+resilient parchment + ethereal ink
+
+spellweave robe
+8 spellweave + 6 bolt of imbued frostweave + eternium thread + frozen orb
+
+spellweave
+bolt of imbued frostweave + 2 eternal fire
+
+bolt of imbued frostweave
+2 bolt of frostweave + 2 infinite dust
+
+bolt of frostweave
+5 frostweave cloth
+
+earthsiege diamond
+dark jade + huge citrine + eternal fire
+
+skyflare diamond
+bloodstone + chalcedony + eternal air
+
+noise machine
+2 froststeel tube + 2 overcharged capacitor + 8 handful of cobalt bolts
+
+froststeel tube
+8 cobalt bar + crystallized water
+
+overcharged capacitor
+4 cobalt bar + crystallized earth
+
+handful of cobalt bolts
+2 cobalt bar
+
+cobalt bar
+cobalt ore
+
+mechanized snow goggles
+8 saronite bar + 2 borean leather + eternal shadow
+
+saronite bar
+2 saronite ore
+
+wormhole generator: northrend
+8 titanium bar + 2 eternal shadow + 2 eternal fire + 2 eternal water + 2 eternal air
+
+3 pygmy oil
+2 pygmy suckerfish
+
+runic mana potion
+2 lichbloom + goldclover + imbued vial
+
+greater healing potion
+liferoot + kingsblood + leaded vial
+
+major troll's blood elixir
+liferoot + bruiseweed + leaded vial
+
+nature protection potion
+liferoot + stranglekelp + leaded vial
+
+swiftness potion
+swiftthistle + briarthorn + leaded vial
+
+swim speed potion
+swiftthistle + blackmouth oil + leaded vial
+
+blackmouth oil
+2 oily blackmouth
+
+elixir of greater defense
+wild steelbloom + goldthorn + leaded vial
+
+lesser invisibility potion
+wild steelbloom + fadeleaf + leaded vial
+
+great feast
+chunk o' mammoth + shoveltusk flank + worm meat + 2 chilled meat
+
+fish feast
+2 musselback sculpin + 2 glacial salmon + 2 nettlefish + northern spices
+
+2 flask of pure mojo
+7 icethorn + 3 pygmy oil + frost lotus + enchanted vial
+
+scroll of enchant weapon - mighty spellpower
+30 infinite dust + 6 dream shard + 6 abyss crystal
+
+barbaric bracers
+8 heavy leather + 2 cured heavy hide + 4 small lustrous pearl + raptor hide + 4 large fang
+
+earthen leg armor
+2 arctic fur + 4 eternal earth + frozen orb
+
+frosthide leg armor
+2 arctic fur + 2 nerubian chitin + frozen orb
+
+2 flask of relentless assault
+7 terocone + 3 mana thistle + fel lotus + imbued vial
+
+glacial bag
+4 moonshroud + 4 ebonweave + eternium thread
+
+#moonshroud
+#bolt of imbued frostweave + 2 eternal life
+
+#ebonweave
+#bolt of imbued frostweave + 2 eternal shadow
+
+frostweave bag
+6 bolt of imbued frostweave + 2 eternium thread
+
+primal might
+primal earth + primal water + primal fire + primal air + primal mana
+
+primal earth
+10 mote of earth
+
+primal life
+10 mote of life
+
+primal water
+10 mote of water
+
+primal air
+10 mote of air
+
+primal fire
+10 mote of fire
+
+primal mana
+10 mote of mana
+
+primal shadow
+10 mote of shadow
+
+elixir of mighty defense
+2 icethorn + crystallized life + imbued vial
+
+practice lock
+bronze bar + 2 handful of copper bolts + weak flux
+
+bronze bar
+copper bar + tin bar
+
+copper bar
+copper ore
+
+tin bar
+tin ore
+
+handful of copper bolts
+copper bar
+
+glyph of pick lock
+lion's ink + light parchment
+
+lion's ink
+2 golden pigment
+
+elixir of the mongoose
+2 mountain silversage + 2 plaguebloom + crystal vial
+
+elixir of major agility
+terocone + 2 felweed + imbued vial
+
+boots of wintry endurance
+3 arctic fur + 20 icy dragonscale + 6 runed orb
+
+arctic fur
+10 heavy borean leather
+
+heavy borean leather
+6 borean leather
+
+mechano-hog
+12 titansteel bar + 40 handful of cobalt bolts + 2 arctic fur + salvaged iron golem parts + 8 goblin-machined piston + elementium-plated exhaust pipe
+
+mekgineer's chopper
+12 titansteel bar + 40 handful of cobalt bolts + 2 arctic fur + salvaged iron golem parts + 8 goblin-machined piston + elementium-plated exhaust pipe
+
+2 volatile blasting trigger
+3 cobalt bar + crystallized water
+
+arclight spanner
+6 copper bar
+
+glyph of typhoon
+resilient parchment + ink of the sea
+
+ink of the sea
+2 azure pigment
+
+5 azure pigment
+2 deadnettle
+
+5 azure pigment
+2 fire leaf
+
+5 azure pigment
+2 fire seed
+
+5 azure pigment
+2 goldclover
+
+5 azure pigment
+2 talandra's rose
+
+5 azure pigment
+2 tiger lily
+
+3 azure pigment
+adder's tongue
+
+3 azure pigment
+icethorn
+
+3 azure pigment
+lichbloom
+
+eternal belt buckle
+4 saronite bar + eternal earth + eternal water + eternal shadow
+
+baked manta ray
+imperial manta ray
+
+ethereal oil
+2 glassfin minnow
+
+elixir of water walking
+3 ethereal oil + imbued vial
+
+purification potion
+2 icecap + 2 plaguebloom + crystal vial
+
+restorative potion
+elemental earth + goldthorn + crystal vial
+
+super healing potion
+2 netherbloom + felweed + imbued vial
+
+major healing potion
+2 golden sansam + mountain silversage + crystal vial
+
+earthstorm diamond
+3 deep peridot + 3 shadow draenite + 3 golden draenite + 2 primal earth + 2 primal water
+
+skyfire diamond
+3 blood garnet + 3 flame spessarite + 3 azure moonstone + 2 primal fire + 2 primal air
+
+spellslinger's slippers
+4 spellweave + 4 ebonweave + 6 runed orb
+
+sash of ancient power
+4 spellweave + 4 ebonweave + 6 runed orb
+
+belt of arctic life
+4 heavy borean leather + 3 arctic fur + 6 runed orb
