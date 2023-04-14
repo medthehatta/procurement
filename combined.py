@@ -21,6 +21,39 @@ class Combined:
     def __getitem__(self, key):
         return self.items[key]
 
+    def __len__(self):
+        return len(self.items)
+
+    def _leaf(self, path, pretty=False):
+        path_part = ",".join(map(str, path))
+        if pretty:
+            pad = "  "*len(path)
+            return f"{pad}Leaf[{path_part}]"
+        else:
+            return f"Leaf[{path_part}]"
+
+    def structure(self, path=None, pretty=False):
+        path = path or []
+        name = self.__class__.__name__
+        s = [
+            item.structure(path + [i], pretty=pretty) if isinstance(item, Combined) else
+            self._leaf(path + [i], pretty=pretty)
+            for (i, item) in enumerate(self.items)
+        ]
+        if pretty:
+            pad = "  "*len(path)
+            padnext = "  "*(len(path)+1)
+            joiner = ",\n"
+            return f"{pad}{name}[\n{joiner.join(s)}\n{pad}]"
+        else:
+            return f"{name}[{','.join(s)}]"
+
+    def leaf(self, *path):
+        selected = self
+        for p in path:
+            selected = selected[p]
+        return selected
+
     @classmethod
     def new(cls, lst):
         s = itertools.chain.from_iterable(
@@ -36,6 +69,16 @@ class Combined:
     def flat(cls, seq):
         lst = list(seq)
         return cls.new(lst)
+
+
+class Leaf:
+
+    def __init__(self, path):
+        self.path = path
+        self.items = []
+
+    def __repr__(self):
+        return f"Leaf[{','.join(path)}]"
 
 
 class Impossible_(Combined):
