@@ -422,7 +422,10 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         return _opt_result()
 
     elif len(demand.nonzero_components) == 1:
-        options = registry.lookup(demand)
+        options = [
+            process for process in registry.lookup(demand)
+            if not any(name in path for name in process.product_names())
+        ]
 
         # If there are no ways to meet this demand, the demand itself is
         # fundamental
