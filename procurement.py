@@ -537,3 +537,7 @@ def process_tree_overview(tree, path=None, pretty=False):
 
     else:
         return f"{pad}{tree}"
+
+
+def pprint_process_tree_overview(tree):
+    print(process_tree_overview(tree, pretty=True))
