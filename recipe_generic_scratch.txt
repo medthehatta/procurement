@@ -1,3 +1,12 @@
+fancy
+10 unfancy
+
+10 unfancy
+20 trash
+
+10 unfancy
+fancy
+
 20 petrol | procure=light cracking | seconds=2
 30 water + 30 light oil
 
