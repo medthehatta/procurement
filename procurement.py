@@ -421,7 +421,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         cost_evaluator = lambda x: x["cost"].normsquare()
 
     if len(demand.nonzero_components) == 0:
-        return Or.of(_opt_result())
+        return _opt_result()
 
     elif len(demand.nonzero_components) == 1:
         options = registry.lookup(demand)
@@ -431,7 +431,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         if not options:
             # Take just the positive part of the demand; if we have negative
             # components of demand we don't require it, it's excess.
-            return Or.of(_opt_result(raw=_positive(demand)))
+            return _opt_result(raw=_positive(demand))
 
         # Otherwise, optimize the process
         else:
