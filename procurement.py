@@ -107,6 +107,12 @@ class Registry:
                         procure_name,
                         self.default_procurement,
                     )
+                elif "how" in attributes:
+                    procure_name = attributes.pop("how")
+                    procurement = self.procurements.get(
+                        procure_name,
+                        self.default_procurement,
+                    )
                 else:
                     procurement = self.default_procurement
 
@@ -167,6 +173,34 @@ class Procurement:
             "ingredients": ingredients,
             "excess": excess,
         }
+
+
+class Get(Procurement):
+
+    @classmethod
+    def create(cls, product, **kwargs):
+        return cls(product, **kwargs)
+
+    def __init__(self, product, **kwargs):
+        self.product = product
+        for (arg, value) in kwargs.items():
+            setattr(self, arg, value)
+
+    def product_names(self):
+        (name, _, _) = self.product.pure()
+        return [name]
+
+    def requirements(self, demand=None):
+        if demand is None:
+            demand = self.product
+
+        if demand == demand.zero():
+            return self._requires()
+
+        (_, count, _) = self.product.pure()
+        (_, amount, _) = demand.pure()
+
+        return self._requires(cost=0)
 
 
 class Craft(Procurement):
@@ -272,7 +306,7 @@ class CraftHeterogeneous(Craft):
             )
 
 
-class Buy(Procurement):
+class Buy(Get):
 
     @classmethod
     def create(cls, product, cost, **kwargs):
@@ -281,10 +315,6 @@ class Buy(Procurement):
     def __init__(self, product, cost):
         self.product = product
         self.cost = float(cost)
-
-    def product_names(self):
-        (name, _, _) = self.product.pure()
-        return [name]
 
     def requirements(self, demand=None):
         if demand is None:
@@ -301,7 +331,7 @@ class Buy(Procurement):
         )
 
 
-class Gather(Procurement):
+class Gather(Get):
 
     @classmethod
     def create(cls, product, seconds, **kwargs):
@@ -310,10 +340,6 @@ class Gather(Procurement):
     def __init__(self, product, seconds):
         self.product = product
         self.seconds = float(seconds)
-
-    def product_names(self):
-        (name, _, _) = self.product.pure()
-        return [name]
 
     def requirements(self, demand=None):
         if demand is None:
@@ -503,8 +529,7 @@ def process_tree_overview(tree, path=None, pretty=False):
     elif isinstance(tree, tuple) and tree[0] == "process":
         process = tree[1]["processes"][0]["process"]
         item = tree[1]["processes"][0]["component"][-1]
-        name = process.__name__
-        return process_tree_overview(f"{name}({item})", path=path, pretty=pretty)
+        return process_tree_overview(f"{process.__name__}({item})", path=path, pretty=pretty)
 
     elif isinstance(tree, tuple) and tree[0] == "raw":
         parts = list(tree[1]["raw"].nonzero_components)
