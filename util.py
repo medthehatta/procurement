@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from cytoolz import unique
+
 from procurement import Craft
 from procurement import Ingredients
 from procurement import Registry
@@ -80,3 +82,16 @@ def paths_within(path):
         return str(prefix_ / subpath)
 
     return _relative
+
+
+def all_subclasses(cls):
+    return list(unique(_all_subclasses(cls)))
+
+
+def _all_subclasses(cls):
+    if hasattr(cls, "__subclasses__"):
+        for subclass in cls.__subclasses__():
+            yield subclass
+            yield from all_subclasses(subclass)
+    else:
+        return []

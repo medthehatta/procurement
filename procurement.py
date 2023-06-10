@@ -1,4 +1,3 @@
-from cytoolz import unique
 from functools import reduce
 import itertools
 import re
@@ -64,83 +63,89 @@ class Registry:
         # content lines going to the last provided line.
         for line in itertools.chain(lines, [""]):
 
-            line_nonempty = line.strip()
-            line_empty = not line_nonempty
+            try:
 
-            # Start an entry
-            if mode is IDLE and line_nonempty:
-                mode = LINE_1
-                # 5 ingredient + 2 other ingredient | attribute1=foo bar | attribute2=3
-                # 5 ingredient + 2 other ingredient | attribute1=foo bar attribute2=3
-                # 5 ingredient + 2 other ingredient
-                segments = re.split(r'\s*\|\s*', line_nonempty)
+                line_nonempty = line.strip()
+                line_empty = not line_nonempty
 
-                # Only the first segment mark `|` is important.  Others are for
-                # legibility only.  We ignore the other segment marks by
-                # re-joining the subsequent tokens.
-                if len(segments) > 1:
-                    (output_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
-                else:
-                    (output_raw, attributes_raw) = (segments[0], "")
+                # Start an entry
+                if mode is IDLE and line_nonempty:
+                    mode = LINE_1
+                    # 5 ingredient + 2 other ingredient | attribute1=foo bar | attribute2=3
+                    # 5 ingredient + 2 other ingredient | attribute1=foo bar attribute2=3
+                    # 5 ingredient + 2 other ingredient
+                    segments = re.split(r'\s*\|\s*', line_nonempty)
 
-                # Parse the output.
-                output = self.kind.parse(output_raw, populate=populate, fuzzy=fuzzy)
+                    # Only the first segment mark `|` is important.  Others are for
+                    # legibility only.  We ignore the other segment marks by
+                    # re-joining the subsequent tokens.
+                    if len(segments) > 1:
+                        (output_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
+                    else:
+                        (output_raw, attributes_raw) = (segments[0], "")
 
-                # Parse the attributes.
-                # They will always be a space-free identifier followed by an
-                # equals, then arbitrary data until another attr= or end of
-                # line.
-                # foo1=some data foo2=other foo3=8
-                keys = [
-                    (m.group(1), m.span())
-                    for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
-                ]
-                end_pad = [(None, (None, None))]
+                    # Parse the output.
+                    output = self.kind.parse(output_raw, populate=populate, fuzzy=fuzzy)
 
-                attributes = {}
-                for ((k, (_, start)), (_, (end, _))) in zip(keys, keys[1:] + end_pad):
-                    attributes[k] = attributes_raw[start:end].strip()
+                    # Parse the attributes.
+                    # They will always be a space-free identifier followed by an
+                    # equals, then arbitrary data until another attr= or end of
+                    # line.
+                    # foo1=some data foo2=other foo3=8
+                    keys = [
+                        (m.group(1), m.span())
+                        for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
+                    ]
+                    end_pad = [(None, (None, None))]
 
-                # Determine the procurement in question
-                if "procure" in attributes:
-                    procure_name = attributes.pop("procure")
-                    procurement = self.procurements.get(
-                        procure_name,
-                        self.default_procurement,
-                    )
-                elif "how" in attributes:
-                    procure_name = attributes.pop("how")
-                    procurement = self.procurements.get(
-                        procure_name,
-                        self.default_procurement,
-                    )
-                else:
-                    procurement = self.default_procurement
+                    attributes = {}
+                    for ((k, (_, start)), (_, (end, _))) in zip(keys, keys[1:] + end_pad):
+                        attributes[k] = attributes_raw[start:end].strip()
 
-            # Continue an entry with an inputs line
-            elif mode is LINE_1 and line_nonempty:
-                mode = LINE_2
-                inputs = self.kind.parse(line_nonempty, populate=populate, fuzzy=fuzzy)
+                    # Determine the procurement in question
+                    if "procure" in attributes:
+                        procure_name = attributes.pop("procure")
+                        procurement = self.procurements.get(
+                            procure_name,
+                            self.default_procurement,
+                        )
+                    elif "how" in attributes:
+                        procure_name = attributes.pop("how")
+                        procurement = self.procurements.get(
+                            procure_name,
+                            self.default_procurement,
+                        )
+                    else:
+                        procurement = self.default_procurement
 
-            # Index the single-line (non-crafting) procurement
-            elif line_empty and mode is LINE_1:
-                entry = procurement.create(output, **attributes)
-                self.register(entry)
-                procurement = None
-                attributes = None
-                output = None
-                inputs = None
-                mode = IDLE
+                # Continue an entry with an inputs line
+                elif mode is LINE_1 and line_nonempty:
+                    mode = LINE_2
+                    inputs = self.kind.parse(line_nonempty, populate=populate, fuzzy=fuzzy)
 
-            # Index the multi-line (crafting) procurement
-            elif line_empty and mode is LINE_2:
-                entry = procurement.create(output, inputs=inputs, **attributes)
-                self.register(entry)
-                procurement = None
-                attributes = None
-                output = None
-                inputs = None
-                mode = IDLE
+                # Index the single-line (non-crafting) procurement
+                elif line_empty and mode is LINE_1:
+                    entry = procurement.create(output, **attributes)
+                    self.register(entry)
+                    procurement = None
+                    attributes = None
+                    output = None
+                    inputs = None
+                    mode = IDLE
+
+                # Index the multi-line (crafting) procurement
+                elif line_empty and mode is LINE_2:
+                    entry = procurement.create(output, inputs=inputs, **attributes)
+                    self.register(entry)
+                    procurement = None
+                    attributes = None
+                    output = None
+                    inputs = None
+                    mode = IDLE
+
+            except TypeError:
+                print(f"{mode=} {line=} {inputs=}")
+                raise
 
         return self
 
@@ -502,7 +507,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
                 registry,
                 demand.project(k),
                 cost_evaluator=cost_evaluator,
-                path=path+[k],
+                path=path,
             )
             for k in demand.nonzero_components
         ]
@@ -573,16 +578,3 @@ def process_tree_overview(tree, path=None, pretty=False):
 
 def pprint_process_tree_overview(tree):
     print(process_tree_overview(tree, pretty=True))
-
-
-def all_subclasses(cls):
-    return list(unique(_all_subclasses(cls)))
-
-
-def _all_subclasses(cls):
-    if hasattr(cls, "__subclasses__"):
-        for subclass in cls.__subclasses__():
-            yield subclass
-            yield from all_subclasses(subclass)
-    else:
-        return []
