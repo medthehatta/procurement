@@ -226,22 +226,24 @@ def edit(context_name=None, recipe=False, registry=False):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
+@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
-def optimize(context_name, recipe_string):
+def optimize(context_name, fuzzy, recipe_string):
     """Emit the depenency tree with details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
     result = procurement.optimize(
         registry,
-        registry.kind.parse(recipe_string),
+        registry.kind.parse(recipe_string, fuzzy=fuzzy),
     )
     pprint(result)
 
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
+@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
-def dnf(context_name, recipe_string):
+def dnf(context_name, fuzzy, recipe_string):
     """
     Emit the disjunctive normal form of the tree.
 
@@ -251,7 +253,7 @@ def dnf(context_name, recipe_string):
     registry = registry_from_context(found)
     tree = procurement.optimize(
         registry,
-        registry.kind.parse(recipe_string),
+        registry.kind.parse(recipe_string, fuzzy=fuzzy),
     )
     result = procurement.dnf(tree)
     for entry in result:
@@ -260,12 +262,16 @@ def dnf(context_name, recipe_string):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
+@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
-def summary(context_name, recipe_string):
+def summary(context_name, fuzzy, recipe_string):
     """Emit a summary of the dependency tree without details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
-    tree = procurement.optimize(registry, registry.kind.parse(recipe_string))
+    tree = procurement.optimize(
+        registry,
+        registry.kind.parse(recipe_string, fuzzy=fuzzy),
+    )
     result = procurement.process_tree_overview(tree, pretty=True)
     print(result)
 
