@@ -226,13 +226,23 @@ def edit(context_name=None, recipe=False, registry=False):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-@click.argument("content")
-def add(context_name, content):
+@click.option(
+    "-f",
+    "--from-file",
+    type=click.File("r"),
+)
+@click.argument("content", nargs=-1)
+def add(context_name, from_file, content):
     """Edit the recipes for the context."""
     found = context_name or current_context()
 
-    if not content:
+    if content:
+        content = content[0]
+    elif from_file:
+        content = from_file.read()
+    else:
         click.echo("No content to add")
+        return
 
     if found:
         context_dir = in_repo_dir(found)
@@ -255,25 +265,23 @@ def add(context_name, content):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
-def optimize(context_name, fuzzy, recipe_string):
+def optimize(context_name, recipe_string):
     """Emit the depenency tree with details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
     result = procurement.optimize(
         registry,
-        registry.kind.parse(recipe_string, fuzzy=fuzzy),
+        registry.kind.parse(recipe_string, fuzzy=True),
     )
     pprint(result)
 
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.option("-p", "--suppress-processes", is_flag=True, default=False)
 @click.argument("recipe_string")
-def dnf(context_name, fuzzy, suppress_processes, recipe_string):
+def dnf(context_name, suppress_processes, recipe_string):
     """
     Emit the disjunctive normal form of the tree.
 
@@ -283,7 +291,7 @@ def dnf(context_name, fuzzy, suppress_processes, recipe_string):
     registry = registry_from_context(found)
     tree = procurement.optimize(
         registry,
-        registry.kind.parse(recipe_string, fuzzy=fuzzy),
+        registry.kind.parse(recipe_string, fuzzy=True),
     )
     result = procurement.dnf(tree)
     for entry in result:
@@ -295,15 +303,14 @@ def dnf(context_name, fuzzy, suppress_processes, recipe_string):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-@click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
-def summary(context_name, fuzzy, recipe_string):
+def summary(context_name, recipe_string):
     """Emit a summary of the dependency tree without details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
     tree = procurement.optimize(
         registry,
-        registry.kind.parse(recipe_string, fuzzy=fuzzy),
+        registry.kind.parse(recipe_string, fuzzy=True),
     )
     result = procurement.process_tree_overview(tree, pretty=True)
     print(result)
@@ -311,14 +318,27 @@ def summary(context_name, fuzzy, recipe_string):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-def recipes(context_name):
+@click.argument("items", nargs=-1)
+def recipes(context_name, items):
     """Emit the products with known recipes."""
     found = context_name or current_context()
     registry = registry_from_context(found)
-    for (k, v) in registry.registry.items():
-        print(f"{k} ({len(v)} known)")
-
-
+    if items:
+        item = " ".join(items)
+        real_item = registry.kind.lookup(item)
+        print(real_item.name)
+        for recipe in registry.lookup(real_item):
+            pname = recipe.procurement_name()
+            requirements = recipe.requirements()
+            nonzero_requirements = {
+                k: v for (k, v) in requirements.items() if v
+            }
+            print(f"    {pname}:")
+            for (k, v) in nonzero_requirements.items():
+                print(f"        {k}= {v}")
+    else:
+        for (k, v) in registry.registry.items():
+            print(f"{k} ({len(v)} known)")
 
 
 if __name__ == "__main__":
