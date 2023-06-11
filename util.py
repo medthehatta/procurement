@@ -1,30 +1,11 @@
+import itertools
 from pathlib import Path
 
 from cytoolz import unique
 
-from procurement import Craft
-from procurement import Ingredients
-from procurement import Registry
-
 
 def procure_alias(kind, name):
     return type(name, (kind,), {})
-
-
-def i(n):
-    return Ingredients.lookup(n)
-
-
-def ip(n, **kwargs):
-    return Ingredients.parse(n, **kwargs)
-
-
-def default_registry(procurements):
-    return Registry(
-        kind=Ingredients,
-        default_procurement=Craft,
-        procurements=procurements,
-    )
 
 
 def paths_relative_to(path):
@@ -95,3 +76,17 @@ def _all_subclasses(cls):
             yield from all_subclasses(subclass)
     else:
         return []
+
+
+def reduce2(func, seq):
+    s = iter(seq)
+    first = next(s)
+    return reduce(func, s, first)
+
+
+def dict_msum(dicts):
+    all_keys = reduce2(
+        lambda acc, x: set.intersection(acc, set(x.keys())),
+        dicts,
+    )
+    return {k: msum(x[k] for x in dicts) for k in all_keys}
