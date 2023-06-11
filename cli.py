@@ -150,9 +150,15 @@ def remove(context_name):
 @click.argument("context_name")
 def use(context_name):
     """Activate a known procurement context."""
+    if current_context(fail=False) == context_name:
+        click.echo(f"Already using context {context_name}")
+        return
+
     if os.path.exists(in_repo_dir(context_name)):
         with open(CONTEXT_FILE, "w") as f:
             json.dump({"context": context_name}, f)
+        click.echo(f"Switched to context {context_name}")
+
     else:
         raise RuntimeError(
             f"Provided procurement context {context_name} does not exist!  "
