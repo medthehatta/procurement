@@ -5,6 +5,7 @@ import re
 from combined import And, Or, Empty, Impossible, Combined
 from combined import dnf
 from formal_vector import FormalVector
+from util import dict_msum
 
 
 class Ingredients(FormalVector):
@@ -380,12 +381,6 @@ def _positive(vec):
     )
 
 
-def _sum(seq):
-    s = iter(seq)
-    first = next(s)
-    return reduce(lambda acc, x: acc + x, s, first)
-
-
 def join_opt_results(results):
     # Traverse Ands looking for And "leaves"
     if isinstance(results, And):
@@ -393,7 +388,7 @@ def join_opt_results(results):
         # If we are at an And "leaf", we can combine its children
         if all(isinstance(r, dict) for r in results):
             # Assumes the values from each result dict are monoids
-            joined = {k: _sum(x[k] for x in results) for k in _opt_result()}
+            joined = dict_msum(results)
             return joined
 
         # Otherwise, just traverse
