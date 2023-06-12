@@ -85,12 +85,12 @@ class Registry:
                     # legibility only.  We ignore the other segment marks by
                     # re-joining the subsequent tokens.
                     if len(segments) > 1:
-                        (output_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
+                        (product_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
                     else:
-                        (output_raw, attributes_raw) = (segments[0], "")
+                        (product_raw, attributes_raw) = (segments[0], "")
 
-                    # Parse the output.
-                    output = self.kind.parse(output_raw, populate=populate, fuzzy=fuzzy)
+                    # Parse the product.
+                    product = self.kind.parse(product_raw, populate=populate, fuzzy=fuzzy)
 
                     # Parse the attributes.
                     #
@@ -135,21 +135,21 @@ class Registry:
 
                 # Index the single-line (non-crafting) procurement
                 elif line_empty and mode is LINE_1:
-                    entry = procurement.create(output, **attributes)
+                    entry = procurement.create(product, **attributes)
                     self.register(entry)
                     procurement = None
                     attributes = None
-                    output = None
+                    product = None
                     inputs = None
                     mode = IDLE
 
                 # Index the multi-line (crafting) procurement
                 elif line_empty and mode is LINE_2:
-                    entry = procurement.create(output, inputs=inputs, **attributes)
+                    entry = procurement.create(product, inputs=inputs, **attributes)
                     self.register(entry)
                     procurement = None
                     attributes = None
-                    output = None
+                    product = None
                     inputs = None
                     mode = IDLE
 
@@ -225,14 +225,14 @@ class Get(Procurement):
 class Craft(Procurement):
 
     @classmethod
-    def create(cls, output, inputs, seconds=None, **kwargs):
-        if len(output.nonzero_components) > 1:
-            return CraftHeterogeneous(output, inputs, seconds=seconds, **kwargs)
+    def create(cls, product, inputs, seconds=None, **kwargs):
+        if len(product.nonzero_components) > 1:
+            return CraftHeterogeneous(product, inputs, seconds=seconds, **kwargs)
         else:
-            return CraftHomogeneous(output, inputs, seconds=seconds, **kwargs)
+            return CraftHomogeneous(product, inputs, seconds=seconds, **kwargs)
 
-    def __init__(self, output, inputs, seconds=None):
-        self.output = output
+    def __init__(self, product, inputs, seconds=None):
+        self.product = product
         self.inputs = inputs
         self.seconds = None if seconds is None else float(seconds)
 
@@ -240,21 +240,21 @@ class Craft(Procurement):
 class CraftHomogeneous(Craft):
 
     @classmethod
-    def create(cls, output, inputs, seconds=None, **kwargs):
-        return cls(output, inputs, seconds=seconds, **kwargs)
+    def create(cls, product, inputs, seconds=None, **kwargs):
+        return cls(product, inputs, seconds=seconds, **kwargs)
 
     def product_names(self):
-        (name, _, _) = self.output.pure()
+        (name, _, _) = self.product.pure()
         return [name]
 
     def requirements(self, demand=None):
         if demand is None:
-            demand = self.output
+            demand = self.product
 
         if demand == demand.zero():
             return self._requires()
 
-        (name, count, _) = self.output.pure()
+        (name, count, _) = self.product.pure()
 
         demand_components = demand.nonzero_components
         if (
@@ -281,32 +281,32 @@ class CraftHomogeneous(Craft):
 class CraftHeterogeneous(Craft):
 
     @classmethod
-    def create(cls, output, inputs, seconds=None, **kwargs):
-        return cls(output, inputs, seconds=seconds, **kwargs)
+    def create(cls, product, inputs, seconds=None, **kwargs):
+        return cls(product, inputs, seconds=seconds, **kwargs)
 
     def product_names(self):
-        return list(self.output.nonzero_components.keys())
+        return list(self.product.nonzero_components.keys())
 
     def requirements(self, demand=None):
         if demand is None:
-            demand = self.output
+            demand = self.product
 
         if demand == demand.zero():
             return self._requires()
 
         demand_components = demand.nonzero_components
-        output_components = self.output.nonzero_components
+        product_components = self.product.nonzero_components
 
-        if not set(demand_components).issubset(output_components):
+        if not set(demand_components).issubset(product_components):
             raise self.cannot_meet(demand)
 
         ratios = {
-            k: demand_components[k] / output_components[k]
+            k: demand_components[k] / product_components[k]
             for k in demand_components
         }
 
         # We return the minimum requirements to meet the demand.  Note that
-        # this can produce excess of the output products.
+        # this can produce excess of the product.
 
         bottleneck = max(ratios.values())
 
@@ -314,14 +314,14 @@ class CraftHeterogeneous(Craft):
             reqs = bottleneck * self.seconds * self.inputs
             return self._requires(
                 ingredients=reqs,
-                excess=bottleneck*self.output - demand,
+                excess=bottleneck*self.product - demand,
                 cost=self.seconds * Cost.seconds,
             )
 
         else:
             return self._requires(
                 ingredients=bottleneck * self.inputs,
-                excess=bottleneck*self.output - demand,
+                excess=bottleneck*self.product - demand,
             )
 
 
