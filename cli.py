@@ -334,8 +334,9 @@ def dnf(context_name, suppress_processes, recipe_string):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
+@click.option("-d", "--show-demand", is_flag=True, default=False)
 @click.argument("recipe_string")
-def summary(context_name, recipe_string):
+def summary(context_name, recipe_string, show_demand):
     """Emit a summary of the dependency tree without details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
@@ -343,7 +344,7 @@ def summary(context_name, recipe_string):
         registry,
         registry.kind.parse(recipe_string, fuzzy=True),
     )
-    result = procurement.process_tree_overview(tree, pretty=True)
+    result = procurement.process_tree_overview(tree)
     print(result)
 
 

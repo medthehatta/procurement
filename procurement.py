@@ -526,24 +526,18 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         return join_opt_results(And.flat(component_processes))
 
 
-def process_tree_overview(tree, path=None, pretty=False):
+def process_tree_overview(tree, path=None):
     path = path or []
 
-    if pretty:
-        pad = "    "*len(path)
-        joiner = ",\n"
-        start_list = "[\n"
-        end_list = f"\n{pad}]"
-    else:
-        pad = ""
-        joiner = ","
-        start_list = "["
-        end_list = "]"
+    pad = "    "*len(path)
+    joiner = ",\n"
+    start_list = "[\n"
+    end_list = f"\n{pad}]"
 
     if isinstance(tree, Combined):
         name = tree.__class__.__name__
         s = [
-            process_tree_overview(tree[i], path=path + [i], pretty=pretty)
+            process_tree_overview(tree[i], path=path + [i])
             for (i, item) in enumerate(tree.items)
         ]
         return f"{pad}{name}{start_list}{joiner.join(s)}{end_list}"
@@ -551,7 +545,8 @@ def process_tree_overview(tree, path=None, pretty=False):
     elif isinstance(tree, tuple) and tree[0] == "process":
         process = tree[1]["processes"][0]["process"]
         item = tree[1]["processes"][0]["component"][-1]
-        return process_tree_overview(f"{process}", path=path, pretty=pretty)
+        demand = tree[1]["processes"][0]["demand"]
+        return process_tree_overview(f"{demand} ({process})", path=path)
 
     elif isinstance(tree, tuple) and tree[0] == "raw":
         parts = list(tree[1]["raw"].nonzero_components)
@@ -561,27 +556,24 @@ def process_tree_overview(tree, path=None, pretty=False):
             raws = parts[0]
         else:
             raws = And.flat(parts)
-        return process_tree_overview(raws, path=path, pretty=pretty)
+        return process_tree_overview(raws, path=path)
 
     elif isinstance(tree, dict) and tree.get("processes") and tree.get("raw"):
         return process_tree_overview(
             And.of(("process", tree), ("raw", tree)),
             path=path,
-            pretty=pretty,
         )
 
     elif isinstance(tree, dict) and tree.get("processes"):
         return process_tree_overview(
             ("process", tree),
             path=path,
-            pretty=pretty,
         )
 
     elif isinstance(tree, dict) and tree.get("raw"):
         return process_tree_overview(
             ("raw", tree),
             path=path,
-            pretty=pretty,
         )
 
     else:
@@ -589,4 +581,4 @@ def process_tree_overview(tree, path=None, pretty=False):
 
 
 def pprint_process_tree_overview(tree):
-    print(process_tree_overview(tree, pretty=True))
+    print(process_tree_overview(tree))
