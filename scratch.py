@@ -69,15 +69,16 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         # Otherwise, optimize the process
         # FIXME: first pass, take the option with lowest cost
         candidates = [
-            (process, process.requirements(demand))
+            (
+                process,
+                reqs := process.requirements(demand),
+                cost_evaluator(reqs),
+            )
             for process in options
         ]
-        # FIXME: some kind of bug here.  If cost_evaluator is
-        # x["cost"]["seconds"], I get a more expensive total process for 200
-        # petrol.
-        (process, requirements) = min(
+        (process, requirements, evaluated_cost) = min(
             candidates,
-            key=lambda x: cost_evaluator(x[1]),
+            key=lambda x: x[2],
         )
 
         # Compute the data for this process
@@ -95,6 +96,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
                     "ingredients": ingredients,
                     "excess": excess,
                     "cost": cost,
+                    "evaluated_cost": evaluated_cost,
                 },
             ],
             "raw": registry.kind.zero(),
