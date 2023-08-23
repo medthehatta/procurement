@@ -333,9 +333,10 @@ def recipes(context_name, items):
             nonzero_requirements = {
                 k: v for (k, v) in requirements.items() if v
             }
-            print(f"    {pname}:")
-            for (k, v) in nonzero_requirements.items():
-                print(f"        {k}= {v}")
+            inputs = " + ".join(
+                f"{v} ({k})" for (k, v) in nonzero_requirements.items()
+            )
+            print(f"    {pname}:\t{inputs}")
     else:
         for (k, v) in registry.registry.items():
             print(f"{k} ({len(v)} known)")
