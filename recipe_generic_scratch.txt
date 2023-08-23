@@ -25,11 +25,11 @@ imperial manta ray
 ethereal oil | procure=alchemy
 2 glassfin minnow
 
-goblin-machined piston | procure=vendor source=roxi cash=1000
+goblin-machined piston | procure=vendor source=roxi cost=1000
 
-salvaged iron golem parts | procure=vendor source=roxi cash=3000
+salvaged iron golem parts | procure=vendor source=roxi cost=3000
 
-elementium-plated exhaust pipe | procure=vendor source=roxi cash=1500
+elementium-plated exhaust pipe | procure=vendor source=roxi cost=1500
 
 25 heavy oil + 45 light oil + 55 petrol | procure=advanced oil refining | seconds=5
 50 water + 100 crude oil
