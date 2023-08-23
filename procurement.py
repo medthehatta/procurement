@@ -38,6 +38,12 @@ class Registry:
         else:
             raise LookupError(f"Cannot look up {item}")
 
+    def register(self, entry):
+        for product_name in entry.product_names():
+            self.registry[product_name] = \
+                self.registry.get(product_name, []) + [entry]
+        return self
+
     def from_lines(self, lines, populate=None, fuzzy=False):
         kind = self.kind
         procurements = self.procurements
@@ -106,9 +112,7 @@ class Registry:
             # Index the single-line (non-crafting) procurement
             elif line_empty and mode is LINE_1:
                 entry = procurement.create(output, **attributes)
-                for product_name in entry.product_names():
-                    self.registry[product_name] = \
-                        self.registry.get(product_name, []) + [entry]
+                self.register(entry)
                 procurement = None
                 attributes = None
                 output = None
@@ -118,9 +122,7 @@ class Registry:
             # Index the multi-line (crafting) procurement
             elif line_empty and mode is LINE_2:
                 entry = procurement.create(output, inputs=inputs, **attributes)
-                for product_name in entry.product_names():
-                    self.registry[product_name] = \
-                        self.registry.get(product_name, []) + [entry]
+                self.register(entry)
                 procurement = None
                 attributes = None
                 output = None
