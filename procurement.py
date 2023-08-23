@@ -88,10 +88,15 @@ class Registry:
                     output = self.kind.parse(output_raw, populate=populate, fuzzy=fuzzy)
 
                     # Parse the attributes.
-                    # They will always be a space-free identifier followed by an
-                    # equals, then arbitrary data until another attr= or end of
-                    # line.
+                    #
+                    # They will generally be a space-free identifier followed
+                    # by an equals, then arbitrary data until another attr= or
+                    # end of line.
                     # foo1=some data foo2=other foo3=8
+                    #
+                    # There is syntactic sugar though, and we expand that
+                    # first.
+                    attributes_raw = re.sub(r'(\S+):', r'procure=\1', attributes_raw)
                     keys = [
                         (m.group(1), m.span())
                         for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
