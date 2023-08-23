@@ -526,7 +526,7 @@ def process_tree_overview(tree, path=None):
     path = path or []
 
     pad = "    "*len(path)
-    joiner = ",\n"
+    joiner = "\n"
     start_list = "[\n"
     end_list = f"\n{pad}]"
 
