@@ -403,12 +403,9 @@ def _optimize_leaf(
         cost=cost,
         evaluated_cost=evaluated_cost,
     )
-
-    # Join this to optimized processes for the components
-    missing = ingredients - excess
     component_processes = optimize(
         registry,
-        missing,
+        ingredients,
         cost_evaluator=cost_evaluator,
         path=path,
     )
@@ -416,6 +413,7 @@ def _optimize_leaf(
 
 
 def optimize(registry, demand, cost_evaluator=None, path=None):
+    path = path or []
 
     if cost_evaluator is None:
         cost_evaluator = lambda x: x["cost"].normsquare()
@@ -429,9 +427,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         # If there are no ways to meet this demand, the demand itself is
         # fundamental
         if not options:
-            # Take just the positive part of the demand; if we have negative
-            # components of demand we don't require it, it's excess.
-            return _opt_result(raw=_positive(demand))
+            return _opt_result(raw=demand)
 
         # Otherwise, optimize the process
         else:
@@ -441,7 +437,7 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
                     # Take just the positive part of the demand; if we have
                     # negative components of demand we don't require it, it's
                     # excess.
-                    reqs := process.requirements(_positive(demand)),
+                    reqs := process.requirements(demand),
                     cost_evaluator(reqs),
                 )
                 for process in options
@@ -463,7 +459,6 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
     # If our input is a combination of components, optimize each separately and
     # add the results
     else:
-        path = path or []
         component_processes = [
             optimize(
                 registry,
@@ -508,7 +503,7 @@ def process_tree_overview(tree, path=None, pretty=False):
         parts = list(tree[1]["raw"].nonzero_components)
         if len(parts) == 0:
             raise ValueError("Wut")
-        if len(parts) == 1:
+        elif len(parts) == 1:
             raws = parts[0]
         else:
             raws = And.flat(parts)
