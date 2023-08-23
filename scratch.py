@@ -36,6 +36,7 @@ registry = Registry(
         "advanced oil refining": procure_alias(CraftHeterogeneous, "AdvancedOilRefining"),
         "chemical": procure_alias(CraftHomogeneous, "Chemical"),
         "heavy cracking": procure_alias(CraftHomogeneous, "HeavyOilCracking"),
+        "light cracking": procure_alias(CraftHomogeneous, "LightOilCracking"),
     },
     default_procurement=Craft,
 )
