@@ -72,9 +72,9 @@ class Registry:
                 # 5 ingredient + 2 other ingredient
                 segments = re.split(r'\s*\|\s*', line_nonempty)
 
-                # Only the first segment mark is important.  Others are for
-                # legibility.  We ignore the other segment marks by re-joining
-                # the subsequent tokens.
+                # Only the first segment mark `|` is important.  Others are for
+                # legibility only.  We ignore the other segment marks by
+                # re-joining the subsequent tokens.
                 if len(segments) > 1:
                     (output_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
                 else:
