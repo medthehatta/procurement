@@ -234,22 +234,22 @@ class Get(Procurement):
 class Craft(Procurement):
 
     @classmethod
-    def create(cls, product, inputs, seconds=None, **kwargs):
+    def create(cls, product, inputs, seconds=0, **kwargs):
         if len(product.nonzero_components) > 1:
             return CraftHeterogeneous(product, inputs, seconds=seconds, **kwargs)
         else:
             return CraftHomogeneous(product, inputs, seconds=seconds, **kwargs)
 
-    def __init__(self, product, inputs, seconds=None):
+    def __init__(self, product, inputs, seconds=0):
         self.product = product
         self.inputs = inputs
-        self.seconds = None if seconds is None else float(seconds)
+        self.seconds = float(seconds)
 
 
 class CraftHomogeneous(Craft):
 
     @classmethod
-    def create(cls, product, inputs, seconds=None, **kwargs):
+    def create(cls, product, inputs, seconds=0, **kwargs):
         return cls(product, inputs, seconds=seconds, **kwargs)
 
     def product_names(self):
@@ -274,7 +274,7 @@ class CraftHomogeneous(Craft):
 
         (_, amount, _) = demand.pure()
 
-        if self.seconds is not None:
+        if self.seconds != 0:
             rate = count / self.seconds
             return self._requires(
                 ingredients=amount/rate * self.inputs,
@@ -290,7 +290,7 @@ class CraftHomogeneous(Craft):
 class CraftHeterogeneous(Craft):
 
     @classmethod
-    def create(cls, product, inputs, seconds=None, **kwargs):
+    def create(cls, product, inputs, seconds=0, **kwargs):
         return cls(product, inputs, seconds=seconds, **kwargs)
 
     def product_names(self):
