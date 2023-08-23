@@ -411,5 +411,5 @@ spellslinger's slippers
 sash of ancient power
 4 spellweave + 4 ebonweave + 6 runed orb
 
-belt of arctic life
+belt of arctic life | procure=smith
 4 heavy borean leather + 3 arctic fur + 6 runed orb

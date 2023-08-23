@@ -40,6 +40,7 @@ registry = default_registry(
         "chemical": procure_alias(CraftHomogeneous, "Chemical"),
         "heavy cracking": procure_alias(CraftHomogeneous, "HeavyOilCracking"),
         "light cracking": procure_alias(CraftHomogeneous, "LightOilCracking"),
+        "smith": procure_alias(CraftHomogeneous, "Smithing"),
     },
 )
 
