@@ -358,6 +358,46 @@ def _opt_result(processes=None, raw=None, cost=None, evaluated_cost=None):
     }
 
 
+def _optimize_leaf(
+    registry,
+    cost_evaluator,
+    demand,
+    process,
+    requirements,
+    evaluated_cost,
+    path=None,
+):
+    (name, _, _) = demand.pure()
+    path = path or [name]
+    ingredients = requirements["ingredients"]
+    excess = requirements["excess"]
+    cost = requirements["cost"]
+    process_data = {
+        "component": path,
+        "process": type(process),
+        "demand": demand,
+        "ingredients": ingredients,
+        "excess": excess,
+        "cost": cost,
+        "evaluated_cost": evaluated_cost,
+    }
+    base = _opt_result(
+        processes=[process_data],
+        cost=cost,
+        evaluated_cost=evaluated_cost,
+    )
+
+    # Join this to optimized processes for the components
+    missing = _positive(ingredients - excess)
+    component_processes = optimize(
+        registry,
+        missing,
+        cost_evaluator=cost_evaluator,
+        path=path,
+    )
+    return _join_opt_results([base, component_processes])
+
+
 def optimize(registry, demand, cost_evaluator=None, path=None):
 
     if cost_evaluator is None:
@@ -375,50 +415,29 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             return _opt_result(raw=demand)
 
         # Otherwise, optimize the process
-        # FIXME: first pass, take the option with lowest cost
-        candidates = [
-            (
-                process,
-                reqs := process.requirements(demand),
-                cost_evaluator(reqs),
+        else:
+            # FIXME: first pass, take the option with lowest cost
+            candidates = [
+                (
+                    process,
+                    reqs := process.requirements(demand),
+                    cost_evaluator(reqs),
+                )
+                for process in options
+            ]
+            (process, requirements, evaluated_cost) = min(
+                candidates,
+                key=lambda x: x[2],
             )
-            for process in options
-        ]
-        (process, requirements, evaluated_cost) = min(
-            candidates,
-            key=lambda x: x[2],
-        )
-
-        # Compute the data for this process
-        (name, _, _) = demand.pure()
-        path = path or [name]
-        ingredients = requirements["ingredients"]
-        excess = requirements["excess"]
-        cost = requirements["cost"]
-        process_data = {
-            "component": path,
-            "process": type(process),
-            "demand": demand,
-            "ingredients": ingredients,
-            "excess": excess,
-            "cost": cost,
-            "evaluated_cost": evaluated_cost,
-        }
-        base = _opt_result(
-            processes=[process_data],
-            cost=cost,
-            evaluated_cost=evaluated_cost,
-        )
-
-        # Join this to optimized processes for the components
-        missing = _positive(ingredients - excess)
-        component_processes = optimize(
-            registry,
-            missing,
-            cost_evaluator=cost_evaluator,
-            path=path,
-        )
-        return _join_opt_results([base, component_processes])
+            return _optimize_leaf(
+                registry=registry,
+                cost_evaluator=cost_evaluator,
+                demand=demand,
+                process=process,
+                requirements=requirements,
+                evaluated_cost=evaluated_cost,
+                path=path
+            )
 
     # If our input is a combination of components, optimize each separately and
     # add the results
