@@ -28,8 +28,13 @@ eternal belt buckle | procure=smith
 baked manta ray | procure=cook
 imperial manta ray
 
+imperial manta ray | procure=vendor source=somebody cost=50000
+
 ethereal oil | procure=alchemy
 2 glassfin minnow
+
+2 goblin-machined piston
+5 baked manta ray
 
 goblin-machined piston | procure=vendor source=roxi cost=1000
 
@@ -39,7 +44,6 @@ elementium-plated exhaust pipe | procure=vendor source=roxi cost=1500
 
 25 heavy oil + 45 light oil + 55 petrol | procure=advanced oil refining | seconds=5
 50 water + 100 crude oil
-
 
 10 lubricant | procure=chemical seconds=1
 10 heavy oil
