@@ -295,7 +295,7 @@ class Buy(Procurement):
         (_, amount, _) = demand.pure()
 
         return self._requires(
-            cost=amount/count * self.cost * Cost.cost,
+            cost=amount/count * self.cost * Cost.cash,
         )
 
 
