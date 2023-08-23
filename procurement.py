@@ -533,46 +533,75 @@ def process_tree_overview(tree, path=None):
     if isinstance(tree, Combined):
         name = tree.__class__.__name__
         s = [
-            process_tree_overview(tree[i], path=path + [i])
+            process_tree_overview(item, path=path + [i])
             for (i, item) in enumerate(tree.items)
         ]
-        return f"{pad}{name}{start_list}{joiner.join(s)}{end_list}"
-
-    elif isinstance(tree, tuple) and tree[0] == "process":
-        process = tree[1]["processes"][0]["process"]
-        demand = tree[1]["processes"][0]["demand"]
-        return process_tree_overview(f"{demand} ({process})", path=path)
-
-    elif isinstance(tree, tuple) and tree[0] == "raw":
-        parts = list(tree[1]["raw"].nonzero_components)
-        if len(parts) == 0:
-            raise ValueError("Wut")
-        elif len(parts) == 1:
-            raws = tree[1]["raw"].project(parts[0])
+        nonempty = [x for x in s if x.strip()]
+        if nonempty:
+            return f"{pad}{name}{start_list}{joiner.join(nonempty)}{end_list}"
         else:
-            raws = And.flat(tree[1]["raw"].project(p) for p in parts)
-        return process_tree_overview(raws, path=path)
+            return ""
 
-    elif isinstance(tree, dict) and tree.get("processes") and tree.get("raw"):
-        return process_tree_overview(
-            And.of(("process", tree), ("raw", tree)),
-            path=path,
-        )
+    elif isinstance(tree, tuple):
+        if tree[0] == "processes":
+            if tree[1]:
+                process = tree[1][0]["process"]
+                demand = tree[1][0]["demand"]
+                return process_tree_overview(f"{demand} ({process})", path=path)
+            else:
+                return process_tree_overview("", path=path)
 
-    elif isinstance(tree, dict) and tree.get("processes"):
-        return process_tree_overview(
-            ("process", tree),
-            path=path,
-        )
+        elif tree[0] == "raw":
+            parts = list(tree[1].nonzero_components)
+            raws = And.flat(tree[1].project(p) for p in parts)
+            return process_tree_overview(raws, path=path)
 
-    elif isinstance(tree, dict) and tree.get("raw"):
+        else:
+            return ""
+
+    elif isinstance(tree, dict):
         return process_tree_overview(
-            ("raw", tree),
+            And.flat((k, v) for (k, v) in tree.items()),
             path=path,
         )
 
     else:
         return f"{pad}{tree}"
+
+
+def raw_input_overview(tree, path=None):
+    path = path or []
+
+    joiner = "\n"
+
+    if isinstance(tree, Combined):
+        s = [
+            raw_input_overview(item, path=path + [i])
+            for (i, item) in enumerate(tree.items)
+        ]
+        nonempty = [x for x in s if x.strip()]
+        if nonempty:
+            return joiner.join(nonempty)
+        else:
+            return ""
+
+    elif isinstance(tree, tuple):
+        if tree[0] == "raw":
+            parts = list(tree[1].nonzero_components)
+            raws = And.flat(tree[1].project(p) for p in parts)
+            return raw_input_overview(raws, path=path)
+
+        else:
+            return ""
+
+    elif isinstance(tree, dict):
+        return raw_input_overview(
+            And.flat((k, v) for (k, v) in tree.items()),
+            path=path,
+        )
+
+    else:
+        return f"{tree}"
 
 
 def pprint_process_tree_overview(tree):
