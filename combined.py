@@ -26,11 +26,8 @@ class Combined:
 
     def _leaf(self, path, pretty=False):
         path_part = ",".join(map(str, path))
-        if pretty:
-            pad = "  "*len(path)
-            return f"{pad}Leaf[{path_part}]"
-        else:
-            return f"Leaf[{path_part}]"
+        pad = "  "*len(path) if pretty else ""
+        return f"{pad}Leaf[{path_part}]"
 
     def structure(self, path=None, pretty=False):
         path = path or []
