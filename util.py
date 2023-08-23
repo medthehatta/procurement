@@ -78,15 +78,12 @@ def _all_subclasses(cls):
         return []
 
 
-def reduce2(func, seq):
-    s = iter(seq)
-    first = next(s)
-    return reduce(func, s, first)
-
-
 def dict_msum(dicts):
-    all_keys = reduce2(
-        lambda acc, x: set.intersection(acc, set(x.keys())),
-        dicts,
-    )
-    return {k: msum(x[k] for x in dicts) for k in all_keys}
+    result = {}
+    for dic in dicts:
+        for k in dic:
+            if k in result:
+                result[k] += dic[k]
+            else:
+                result[k] = dic[k]
+    return result
