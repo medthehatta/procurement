@@ -178,6 +178,10 @@ class Craft(Procurement):
 
 class CraftHomogeneous(Craft):
 
+    @classmethod
+    def create(cls, output, inputs, seconds=None, **kwargs):
+        return cls(output, inputs, seconds=seconds, **kwargs)
+
     def product_names(self):
         (name, _, _) = self.output.pure()
         return [name]
@@ -214,6 +218,10 @@ class CraftHomogeneous(Craft):
 
 
 class CraftHeterogeneous(Craft):
+
+    @classmethod
+    def create(cls, output, inputs, seconds=None, **kwargs):
+        return cls(output, inputs, seconds=seconds, **kwargs)
 
     def product_names(self):
         return list(self.output.nonzero_components.keys())
