@@ -40,16 +40,28 @@ class Combined:
         lst = list(seq)
         return cls.new(lst)
 
+    def to_dict(self):
+        return {
+            f"${self.__class__.__name__}": [
+                item.to_dict() if hasattr(item, "to_dict") else item
+                for item in self.items
+            ]
+        }
+
 
 class Impossible_(Combined):
-    pass
+
+    def to_dict(self):
+        return None
 
 
 Impossible = Impossible_([])
 
 
 class Empty_(Combined):
-    pass
+
+    def to_dict(self):
+        return []
 
 
 Empty = Empty_([])
