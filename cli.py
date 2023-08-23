@@ -44,7 +44,12 @@ def cli():
     """Traverse complicated procurement trees."""
 
 
-@cli.command()
+@cli.group()
+def context():
+    """Commands for managing contexts."""
+
+
+@context.command()
 @click.option("-n", "--context-name", prompt=True)
 def init(context_name):
     """Initialize a new procurement context."""
@@ -109,20 +114,20 @@ def init(context_name):
         )
 
 
-@cli.command()
+@context.command()
 def where():
     """Emit the location of the procurement contexts."""
     click.echo(REPO_DIR)
 
 
-@cli.command()
+@context.command()
 def list():
     """List known procurement contexts."""
     for line in os.listdir(REPO_DIR):
         click.echo(line)
 
 
-@cli.command()
+@context.command()
 @click.argument("context_name")
 def remove(context_name):
     """
@@ -141,7 +146,7 @@ def remove(context_name):
         click.echo("Removal not confirmed, aborting.")
 
 
-@cli.command()
+@context.command()
 @click.argument("context_name")
 def use(context_name):
     """Activate a known procurement context."""
@@ -169,7 +174,7 @@ def current_context(fail=True):
         return context
 
 
-@cli.command()
+@context.command()
 def current():
     """Emit the current procurement context."""
     context = current_context()
@@ -180,7 +185,7 @@ def current():
         click.echo("No current context.  Enter one with `procure use`")
 
 
-@cli.command()
+@context.command()
 def quit():
     """Exit the procurement context."""
     try:
@@ -233,7 +238,7 @@ def edit(context_name=None, recipe=False, registry=False):
 )
 @click.argument("content", nargs=-1)
 def add(context_name, from_file, content):
-    """Edit the recipes for the context."""
+    """Add a new recipe."""
     found = context_name or current_context()
 
     if content:
@@ -319,8 +324,8 @@ def summary(context_name, recipe_string):
 @cli.command()
 @click.option("-n", "--context-name", default=None)
 @click.argument("items", nargs=-1)
-def recipes(context_name, items):
-    """Emit the products with known recipes."""
+def recipe(context_name, items):
+    """Retrieve information about known recipes."""
     found = context_name or current_context()
     registry = registry_from_context(found)
     if items:
