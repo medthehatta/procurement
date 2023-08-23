@@ -58,10 +58,14 @@ class Registry:
         LINE_2 = "LINE_2"
 
         mode = IDLE
+        inputs = None
 
         # Add an empty line to the end to trigger entry creation if there are
         # content lines going to the last provided line.
         for line in itertools.chain(lines, [""]):
+
+            if line.strip().startswith("#"):
+                continue
 
             try:
 
@@ -149,7 +153,6 @@ class Registry:
                     mode = IDLE
 
             except TypeError:
-                print(f"{mode=} {line=} {inputs=}")
                 raise
 
         return self

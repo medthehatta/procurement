@@ -226,6 +226,35 @@ def edit(context_name=None, recipe=False, registry=False):
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
+@click.argument("content")
+def add(context_name, content):
+    """Edit the recipes for the context."""
+    found = context_name or current_context()
+
+    if not content:
+        click.echo("No content to add")
+
+    if found:
+        context_dir = in_repo_dir(found)
+        in_context_dir = paths_within(context_dir)
+
+        which_file = "recipes.txt"
+
+        registry = registry_from_context(found)
+
+        try:
+            registry.from_lines(content.splitlines())
+        except (TypeError, NameError, LookupError, AttributeError) as err:
+            click.echo(f"Error parsing provided recipe content: {err}")
+        else:
+            with open(in_context_dir(which_file), "a") as f:
+                f.write(f"\n\n{content}\n\n")
+    else:
+        click.echo("No context to edit")
+
+
+@cli.command()
+@click.option("-n", "--context-name", default=None)
 @click.option("-f", "--fuzzy", is_flag=True, default=False)
 @click.argument("recipe_string")
 def optimize(context_name, fuzzy, recipe_string):
@@ -242,8 +271,9 @@ def optimize(context_name, fuzzy, recipe_string):
 @cli.command()
 @click.option("-n", "--context-name", default=None)
 @click.option("-f", "--fuzzy", is_flag=True, default=False)
+@click.option("-p", "--suppress-processes", is_flag=True, default=False)
 @click.argument("recipe_string")
-def dnf(context_name, fuzzy, recipe_string):
+def dnf(context_name, fuzzy, suppress_processes, recipe_string):
     """
     Emit the disjunctive normal form of the tree.
 
@@ -257,7 +287,10 @@ def dnf(context_name, fuzzy, recipe_string):
     )
     result = procurement.dnf(tree)
     for entry in result:
-        pprint(procurement.join_opt_results(entry))
+        out = procurement.join_opt_results(entry)
+        if suppress_processes:
+            del out["processes"]
+        pprint(out)
 
 
 @cli.command()
@@ -284,6 +317,8 @@ def recipes(context_name):
     registry = registry_from_context(found)
     for (k, v) in registry.registry.items():
         print(f"{k} ({len(v)} known)")
+
+
 
 
 if __name__ == "__main__":
