@@ -423,28 +423,30 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
 
     elif len(demand.nonzero_components) == 1:
         options = [
-            process for process in registry.lookup(demand)
-            if not any(name in path for name in process.product_names())
+            (
+                process,
+                reqs := process.requirements(demand),
+                cost_evaluator(reqs),
+            )
+            for process in registry.lookup(demand)
+        ]
+
+        # FIXME: Does pure() break if there are spurious nonzero components?
+        (name, _, _) = demand.pure()
+        taboo = path + [name]
+
+        candidates = [
+            (process, reqs, cost) for (process, reqs, cost) in options
+            if not any(c in taboo for c in reqs["ingredients"].nonzero_components)
         ]
 
         # If there are no ways to meet this demand, the demand itself is
         # fundamental
-        if not options:
+        if not candidates:
             return _opt_result(raw=demand)
 
         # Otherwise, optimize the process
         else:
-            candidates = [
-                (
-                    process,
-                    # Take just the positive part of the demand; if we have
-                    # negative components of demand we don't require it, it's
-                    # excess.
-                    reqs := process.requirements(demand),
-                    cost_evaluator(reqs),
-                )
-                for process in options
-            ]
             return Or.flat(
                 _optimize_leaf(
                     registry=registry,
