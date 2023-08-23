@@ -1,6 +1,9 @@
 import itertools
 from pprint import pprint
 
+from combined import And, Or, Empty, Impossible
+from combined import dnf
+
 from procurement import Craft
 from procurement import CraftHomogeneous
 from procurement import CraftHeterogeneous
@@ -11,6 +14,7 @@ from procurement import Costs
 from procurement import Cost
 from procurement import Registry
 from procurement import optimize
+from procurement import join_opt_results
 
 
 class Vendor(Buy):
