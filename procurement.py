@@ -1,3 +1,4 @@
+from cytoolz import unique
 from functools import reduce
 import itertools
 import re
@@ -145,6 +146,10 @@ class Registry:
 
 
 class Procurement:
+
+    @classmethod
+    def procurement_name(cls):
+        return cls.__name__.lower()
 
     @property
     def product_names(self):
@@ -568,3 +573,16 @@ def process_tree_overview(tree, path=None, pretty=False):
 
 def pprint_process_tree_overview(tree):
     print(process_tree_overview(tree, pretty=True))
+
+
+def all_subclasses(cls):
+    return list(unique(_all_subclasses(cls)))
+
+
+def _all_subclasses(cls):
+    if hasattr(cls, "__subclasses__"):
+        for subclass in cls.__subclasses__():
+            yield subclass
+            yield from all_subclasses(subclass)
+    else:
+        return []
