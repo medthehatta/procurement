@@ -103,7 +103,7 @@ class FormalVector:
                 return cls.named(x, content=populate(x))
 
         components = [
-            re.search(r"(-?\d+(?:\.\d+)?)?\s*[*]?\s*(.*)", y.strip()).groups()
+            re.search(r"(-?\d+(?:\.\d+)?(?:\s+[*]?\s*|\s*[*]?\s+))?(.*)", y.strip()).groups()
             for y in re.split(r"\s*[+]\s*", s)
         ]
         if len(components) == 1:
