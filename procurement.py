@@ -2,7 +2,7 @@ from functools import reduce
 import itertools
 import re
 
-from combined import And, Or, Empty, Impossible
+from combined import And, Or, Empty, Impossible, Combined
 from combined import dnf
 from formal_vector import FormalVector
 
@@ -474,3 +474,66 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             for k in demand.nonzero_components
         ]
         return join_opt_results(And.flat(component_processes))
+
+
+def process_tree_overview(tree, path=None, pretty=False):
+    path = path or []
+
+    if pretty:
+        pad = "    "*len(path)
+        joiner = ",\n"
+        start_list = "[\n"
+        end_list = f"\n{pad}]"
+    else:
+        pad = ""
+        joiner = ","
+        start_list = "["
+        end_list = "]"
+
+    if isinstance(tree, Combined):
+        name = tree.__class__.__name__
+        s = [
+            process_tree_overview(tree[i], path=path + [i], pretty=pretty)
+            for (i, item) in enumerate(tree.items)
+        ]
+        return f"{pad}{name}{start_list}{joiner.join(s)}{end_list}"
+
+    elif isinstance(tree, tuple) and tree[0] == "process":
+        process = tree[1]["processes"][0]["process"]
+        item = tree[1]["processes"][0]["component"][-1]
+        name = process.__name__
+        return process_tree_overview(f"{name}({item})", path=path, pretty=pretty)
+
+    elif isinstance(tree, tuple) and tree[0] == "raw":
+        parts = list(tree[1]["raw"].nonzero_components)
+        if len(parts) == 0:
+            raise ValueError("Wut")
+        if len(parts) == 1:
+            raws = parts[0]
+        else:
+            raws = And.flat(parts)
+        return process_tree_overview(raws, path=path, pretty=pretty)
+
+    elif isinstance(tree, dict) and tree.get("processes") and tree.get("raw"):
+        return process_tree_overview(
+            And.of(("process", tree), ("raw", tree)),
+            path=path,
+            pretty=pretty,
+        )
+
+    elif isinstance(tree, dict) and tree.get("processes"):
+        return process_tree_overview(
+            ("process", tree),
+            path=path,
+            pretty=pretty,
+        )
+
+    elif isinstance(tree, dict) and tree.get("raw"):
+        return process_tree_overview(
+            ("raw", tree),
+            path=path,
+            pretty=pretty,
+        )
+
+    else:
+        return f"{pad}{tree}"
