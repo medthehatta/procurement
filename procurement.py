@@ -59,7 +59,9 @@ class Registry:
 
         mode = IDLE
 
-        for line in lines:
+        # Add an empty line to the end to trigger entry creation if there are
+        # content lines going to the last provided line.
+        for line in itertools.chain(lines, [""]):
 
             line_nonempty = line.strip()
             line_empty = not line_nonempty
