@@ -285,7 +285,7 @@ def optimize(context_name, recipe_string):
         registry,
         registry.kind.parse(recipe_string, fuzzy=True),
     )
-    pprint(result)
+    pprint(result.to_dict())
 
 
 @cli.command()
