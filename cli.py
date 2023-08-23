@@ -274,11 +274,7 @@ def add(context_name, from_file, content):
         click.echo("No context to edit")
 
 
-@cli.command()
-@click.option("-n", "--context-name", default=None)
-@click.argument("recipe_string")
-def optimize(context_name, recipe_string):
-    """Emit the depenency tree with details."""
+def _optimize(context_name, recipe_string):
     found = context_name or current_context()
     registry = registry_from_context(found)
     result = procurement.optimize(
@@ -286,6 +282,30 @@ def optimize(context_name, recipe_string):
         registry.kind.parse(recipe_string, fuzzy=True),
     )
     pprint(result.to_dict())
+
+
+@cli.command()
+@click.option("-n", "--context-name", default=None)
+@click.argument("recipe_string")
+def optimize(context_name, recipe_string):
+    """
+    Emit the depenency tree with details.
+
+    Same as `how`.
+    """
+    return _optimize(context_name, recipe_string)
+
+
+@cli.command()
+@click.option("-n", "--context-name", default=None)
+@click.argument("recipe_string")
+def how(context_name, recipe_string):
+    """
+    Emit the depenency tree with details.
+
+    Same as `optimize`.
+    """
+    return _optimize(context_name, recipe_string)
 
 
 @cli.command()
