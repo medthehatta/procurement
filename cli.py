@@ -333,14 +333,15 @@ def dnf(
         registry.kind.parse(recipe_string, fuzzy=True),
     )
     result = procurement.dnf(tree)
-    for entry in result:
+    for (i, entry) in enumerate(result):
         if summarize:
             result = procurement.process_tree_overview(entry)
             print(result)
         elif summarize_raw:
             result = procurement.raw_input_overview(entry)
-            print(result)
-            print("\n")
+            for line in result.splitlines():
+                print(f"option{i}: {line}")
+            print("")
         else:
             out = procurement.join_opt_results(entry)
             if suppress_processes:
@@ -350,9 +351,8 @@ def dnf(
 
 @cli.command()
 @click.option("-n", "--context-name", default=None)
-@click.option("-d", "--show-demand", is_flag=True, default=False)
 @click.argument("recipe_string")
-def summary(context_name, recipe_string, show_demand):
+def summary(context_name, recipe_string):
     """Emit a summary of the dependency tree without details."""
     found = context_name or current_context()
     registry = registry_from_context(found)
