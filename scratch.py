@@ -16,6 +16,7 @@ from procurement import Registry
 from procurement import join_opt_results
 from procurement import optimize
 from procurement import process_tree_overview
+from procurement import pprint_process_tree_overview
 
 
 from util import default_registry
