@@ -4,17 +4,21 @@ from pprint import pprint
 from combined import And, Or, Empty, Impossible
 from combined import dnf
 
-from procurement import Craft
-from procurement import CraftHomogeneous
-from procurement import CraftHeterogeneous
 from procurement import Buy
+from procurement import Cost
+from procurement import Costs
+from procurement import Craft
+from procurement import CraftHeterogeneous
+from procurement import CraftHomogeneous
 from procurement import Gather
 from procurement import Ingredients
-from procurement import Costs
-from procurement import Cost
 from procurement import Registry
-from procurement import optimize
 from procurement import join_opt_results
+from procurement import optimize
+
+from util import default_registry
+from util import i
+from util import procure_alias
 
 
 class Vendor(Buy):
@@ -24,16 +28,7 @@ class Vendor(Buy):
         self.source = source
 
 
-def procure_alias(kind, name):
-    return type(name, (kind,), {})
-
-
-def i(n):
-    return Ingredients.lookup(n)
-
-
-registry = Registry(
-    kind=Ingredients,
+registry = default_registry(
     procurements={
         "vendor": Vendor,
         "coal liquefaction": procure_alias(CraftHeterogeneous, "CoalLiquefaction"),
@@ -42,7 +37,6 @@ registry = Registry(
         "heavy cracking": procure_alias(CraftHomogeneous, "HeavyOilCracking"),
         "light cracking": procure_alias(CraftHomogeneous, "LightOilCracking"),
     },
-    default_procurement=Craft,
 )
 
 
