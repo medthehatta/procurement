@@ -311,8 +311,9 @@ def how(context_name, recipe_string):
 @cli.command()
 @click.option("-n", "--context-name", default=None)
 @click.option("-p", "--suppress-processes", is_flag=True, default=False)
+@click.option("-s", "--summarize", is_flag=True, default=False)
 @click.argument("recipe_string")
-def dnf(context_name, suppress_processes, recipe_string):
+def dnf(context_name, suppress_processes, summarize, recipe_string):
     """
     Emit the disjunctive normal form of the tree.
 
@@ -326,10 +327,14 @@ def dnf(context_name, suppress_processes, recipe_string):
     )
     result = procurement.dnf(tree)
     for entry in result:
-        out = procurement.join_opt_results(entry)
-        if suppress_processes:
-            del out["processes"]
-        pprint(out)
+        if summarize:
+            result = procurement.process_tree_overview(entry)
+            print(result)
+        else:
+            out = procurement.join_opt_results(entry)
+            if suppress_processes:
+                del out["processes"]
+            pprint(out)
 
 
 @cli.command()

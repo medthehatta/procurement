@@ -50,10 +50,6 @@ class Registry:
         return self
 
     def from_lines(self, lines, populate=None, fuzzy=False):
-        kind = self.kind
-        procurements = self.procurements
-        default_procurement = self.default_procurement
-
         IDLE = "IDLE"
         LINE_1 = "LINE_1"
         LINE_2 = "LINE_2"
@@ -544,7 +540,6 @@ def process_tree_overview(tree, path=None):
 
     elif isinstance(tree, tuple) and tree[0] == "process":
         process = tree[1]["processes"][0]["process"]
-        item = tree[1]["processes"][0]["component"][-1]
         demand = tree[1]["processes"][0]["demand"]
         return process_tree_overview(f"{demand} ({process})", path=path)
 
@@ -553,9 +548,9 @@ def process_tree_overview(tree, path=None):
         if len(parts) == 0:
             raise ValueError("Wut")
         elif len(parts) == 1:
-            raws = parts[0]
+            raws = tree[1]["raw"].project(parts[0])
         else:
-            raws = And.flat(parts)
+            raws = And.flat(tree[1]["raw"].project(p) for p in parts)
         return process_tree_overview(raws, path=path)
 
     elif isinstance(tree, dict) and tree.get("processes") and tree.get("raw"):
