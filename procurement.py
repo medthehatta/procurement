@@ -551,7 +551,7 @@ def process_tree_overview(tree, path=None, pretty=False):
     elif isinstance(tree, tuple) and tree[0] == "process":
         process = tree[1]["processes"][0]["process"]
         item = tree[1]["processes"][0]["component"][-1]
-        return process_tree_overview(f"{process.__name__}({item})", path=path, pretty=pretty)
+        return process_tree_overview(f"{process.__class__.__name__}({item})", path=path, pretty=pretty)
 
     elif isinstance(tree, tuple) and tree[0] == "raw":
         parts = list(tree[1]["raw"].nonzero_components)
