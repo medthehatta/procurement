@@ -1,6 +1,9 @@
 fancy
 10 unfancy
 
+fauncy
+fauncy
+
 10 unfancy
 20 trash
 
