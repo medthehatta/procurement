@@ -10,6 +10,7 @@ from procurement import Ingredients
 from procurement import Costs
 from procurement import Cost
 from procurement import Registry
+from procurement import optimize
 
 
 class Vendor(Buy):
@@ -44,96 +45,3 @@ with open("recipe_generic_scratch.txt") as f:
     registry.from_lines(f)
 
 
-def _positive(vec):
-    return vec.sum(
-        vec.project(k) for (k, v) in vec.components.items() if v > 0
-    )
-
-
-def optimize(registry, demand, cost_evaluator=None, path=None):
-
-    if cost_evaluator is None:
-        cost_evaluator = lambda x: x["cost"].normsquare()
-
-    if len(demand.nonzero_components) == 0:
-        return {"processes": [], "raw": registry.kind.zero()}
-
-    elif len(demand.nonzero_components) == 1:
-        options = registry.lookup(demand)
-
-        # If there are no ways to meet this demand, the demand itself is
-        # fundamental
-        if not options:
-            return {"processes": [], "raw": demand, "cost": Costs.zero()}
-
-        # Otherwise, optimize the process
-        # FIXME: first pass, take the option with lowest cost
-        candidates = [
-            (
-                process,
-                reqs := process.requirements(demand),
-                cost_evaluator(reqs),
-            )
-            for process in options
-        ]
-        (process, requirements, evaluated_cost) = min(
-            candidates,
-            key=lambda x: x[2],
-        )
-
-        # Compute the data for this process
-        (name, _, _) = demand.pure()
-        path = path or [name]
-        ingredients = requirements["ingredients"]
-        excess = requirements["excess"]
-        cost = requirements["cost"]
-        base = {
-            "processes": [
-                {
-                    "component": path,
-                    "process": type(process),
-                    "demand": demand,
-                    "ingredients": ingredients,
-                    "excess": excess,
-                    "cost": cost,
-                    "evaluated_cost": evaluated_cost,
-                },
-            ],
-            "raw": registry.kind.zero(),
-            "cost": cost,
-        }
-
-        # Join this to optimized processes for the components
-        missing = _positive(ingredients - excess)
-        component_processes = optimize(
-            registry,
-            missing,
-            cost_evaluator=cost_evaluator,
-            path=path,
-        )
-        return {
-            "processes": base["processes"] + component_processes["processes"],
-            "raw": registry.kind.sum(x["raw"] for x in [base, component_processes]),
-            "cost": base["cost"] + component_processes["cost"],
-        }
-
-    # If our input is a combination of components, optimize each separately and
-    # add the results
-    else:
-        path = path or []
-        component_processes = [
-            optimize(
-                registry,
-                demand.project(k),
-                cost_evaluator=cost_evaluator,
-                path=path+[k],
-            )
-            for k in demand.nonzero_components
-        ]
-        return {
-            "processes": list(
-                itertools.chain.from_iterable(x["processes"] for x in component_processes)
-            ),
-            "raw": registry.kind.sum(x["raw"] for x in component_processes),
-            "cost": Costs.sum(x["cost"] for x in component_processes),
-        }
