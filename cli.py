@@ -329,7 +329,7 @@ def recipes(context_name, items):
         print(real_item.name)
         for recipe in registry.lookup(real_item):
             pname = recipe.procurement_name()
-            requirements = recipe.requirements()
+            requirements = recipe.requirements(real_item.normalized())
             nonzero_requirements = {
                 k: v for (k, v) in requirements.items() if v
             }
