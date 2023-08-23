@@ -175,6 +175,15 @@ class Procurement:
     def cannot_meet(self, demand):
         return ValueError(f"Process {self} unable to meet demand {demand}")
 
+    def __repr__(self):
+        data = self.__dict__
+        no_display = ["product", "inputs"]
+        kvp = " ".join(
+            f"{k}={v}" for (k, v) in data.items()
+            if not k.startswith("_") and k not in no_display
+        )
+        return f"{data['product']} | {self.procurement_name()}: {kvp}"
+
     def _requires(
         self,
         cost=None,
@@ -432,7 +441,7 @@ def _optimize_leaf(
     cost = requirements["cost"]
     process_data = {
         "component": path,
-        "process": type(process),
+        "process": process,
         "demand": demand,
         "ingredients": ingredients,
         "excess": excess,
