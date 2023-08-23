@@ -18,6 +18,7 @@ from procurement import optimize
 
 from util import default_registry
 from util import i
+from util import ip
 from util import procure_alias
 
 
