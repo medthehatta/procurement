@@ -340,6 +340,7 @@ def dnf(
         elif summarize_raw:
             result = procurement.raw_input_overview(entry)
             print(result)
+            print("\n")
         else:
             out = procurement.join_opt_results(entry)
             if suppress_processes:
