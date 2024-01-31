@@ -59,7 +59,7 @@ class Registry:
 
         # Add an empty line to the end to trigger entry creation if there are
         # content lines going to the last provided line.
-        for line in itertools.chain(lines, [""]):
+        for (num, line) in enumerate(itertools.chain(lines, [""])):
 
             if line.strip().startswith("#"):
                 continue
@@ -150,7 +150,10 @@ class Registry:
                     mode = IDLE
 
             except TypeError:
-                raise
+                raise ValueError(
+                    f"Parse error on line {num}: {mode} {line_empty=} "
+                    f"{line_nonempty=} {inputs=}"
+                )
 
         return self
 
@@ -375,7 +378,7 @@ class Gather(Get):
         (_, count, _) = self.product.pure()
         (_, amount, _) = demand.pure()
 
-        return _requires(
+        return self._requires(
             cost=amount/count * self.seconds * Cost.seconds,
         )
 
@@ -408,26 +411,22 @@ def join_opt_results(results):
         return results
 
 
-def _opt_result(processes=None, raw=None, cost=None, evaluated_cost=None):
+def _opt_result(processes=None, raw=None, cost=None):
     processes = processes or []
     raw = raw or Ingredients.zero()
     cost = cost or Costs.zero()
-    evaluated_cost = evaluated_cost or 0
     return {
         "processes": processes,
         "raw": raw,
         "cost": cost,
-        "evaluated_cost": evaluated_cost,
     }
 
 
 def _optimize_leaf(
     registry,
-    cost_evaluator,
     demand,
     process,
     requirements,
-    evaluated_cost,
     path=None,
 ):
     (name, _, _) = demand.pure()
@@ -442,38 +441,28 @@ def _optimize_leaf(
         "ingredients": ingredients,
         "excess": excess,
         "cost": cost,
-        "evaluated_cost": evaluated_cost,
     }
     base = _opt_result(
         processes=[process_data],
         cost=cost,
-        evaluated_cost=evaluated_cost,
     )
     component_processes = optimize(
         registry,
         ingredients,
-        cost_evaluator=cost_evaluator,
         path=path,
     )
     return join_opt_results(And.of(base, component_processes))
 
 
-def optimize(registry, demand, cost_evaluator=None, path=None):
+def optimize(registry, demand, path=None):
     path = path or []
-
-    if cost_evaluator is None:
-        cost_evaluator = lambda x: x["cost"].normsquare()
 
     if len(demand.nonzero_components) == 0:
         return _opt_result()
 
     elif len(demand.nonzero_components) == 1:
         options = [
-            (
-                process,
-                reqs := process.requirements(demand),
-                cost_evaluator(reqs),
-            )
+            (process, process.requirements(demand))
             for process in registry.lookup(demand)
         ]
 
@@ -482,12 +471,12 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
         taboo = path + [name]
 
         candidates = [
-            (process, reqs, cost) for (process, reqs, cost) in options
+            (process, reqs) for (process, reqs) in options
             if not any(c in taboo for c in reqs["ingredients"].nonzero_components)
         ]
 
         # If there are no ways to meet this demand, the demand itself is
-        # fundamental
+        # comprised of raw materials
         if not candidates:
             return _opt_result(raw=demand)
 
@@ -496,14 +485,12 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             return Or.flat(
                 _optimize_leaf(
                     registry=registry,
-                    cost_evaluator=cost_evaluator,
                     demand=demand,
                     process=process,
                     requirements=requirements,
-                    evaluated_cost=evaluated_cost,
                     path=path,
                 )
-                for (process, requirements, evaluated_cost)
+                for (process, requirements)
                 in candidates
             )
 
@@ -514,7 +501,6 @@ def optimize(registry, demand, cost_evaluator=None, path=None):
             optimize(
                 registry,
                 demand.project(k),
-                cost_evaluator=cost_evaluator,
                 path=path,
             )
             for k in demand.nonzero_components

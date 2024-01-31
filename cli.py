@@ -338,10 +338,11 @@ def dnf(
             result = procurement.process_tree_overview(entry)
             print(result)
         elif summarize_raw:
-            result = procurement.raw_input_overview(entry)
-            for line in result.splitlines():
-                print(f"option{i}: {line}")
-            print("")
+            print(registry.kind.sum(e["raw"] for e in entry))
+            #result = procurement.raw_input_overview(entry)
+            #for line in result.splitlines():
+            #    print(f"option{i}: {line}")
+            #print("")
         else:
             out = procurement.join_opt_results(entry)
             if suppress_processes:
