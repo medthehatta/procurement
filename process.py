@@ -405,7 +405,7 @@ def process_constraint_matrix(edges):
     )
 
 
-def solve_milp(dense, keys, max_leak=1, max_repeat=180):
+def solve_milp(dense, keys, max_leak=0, max_repeat=180):
     c = np.ones(len(keys))
     A = np.array(dense)
     b_u = max_leak*np.ones(len(dense))
@@ -425,6 +425,6 @@ def solve_milp(dense, keys, max_leak=1, max_repeat=180):
     return dict(zip(keys, map(int, res.x)))
 
 
-def balance_process_tree(edges, max_leak=1, max_repeat=180):
+def balance_process_tree(edges, max_leak=0, max_repeat=180):
     (dense, keys) = get(["dense", "keys"], process_constraint_matrix(edges))
     return solve_milp(dense, keys, max_leak=max_leak, max_repeat=max_repeat)
