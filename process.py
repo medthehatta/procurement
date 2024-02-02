@@ -1,22 +1,167 @@
-import math
+from functools import reduce
 from itertools import chain
+import json
 import re
 
-from cytoolz import sliding_window
+from cytoolz import unique
+from cytoolz import get
+import numpy as np
+from scipy.optimize import milp
+from scipy.optimize import LinearConstraint
+from scipy.optimize import Bounds
 
-from ratios import best_convergent
+
+class InteractiveRegistryExplorer:
+
+    NO_SELECTION = "__NO_SELECTION__"
+
+    def __init__(self, registry):
+        self.registry = registry
+
+    def interactive_pick(self, options):
+        enumerated = list(enumerate(options, start=1))
+
+        indexed = {str(i): opt for (i, opt) in enumerated}
+
+        while True:
+            print("Make a selection:")
+
+            for (i, opt) in enumerated:
+                print(f"{i}) {opt}")
+
+            choice = input("Choice (A to abort, empty for 1): ").strip()
+
+            if not choice:
+                choice = "1"
+
+            if choice.strip().lower() == "a":
+                return self.NO_SELECTION
+
+            if choice in indexed:
+                return indexed[choice]
+            else:
+                print("Invalid choice, try again.\n")
+
+    def interactive_build_tree(self, desired, path=None):
+        path = path or []
+
+        v_desired = desired.triples()
+        if len(v_desired) != 1:
+            raise NotImplementedError(
+                f"Only supports single output atm. {desired}"
+            )
+
+        (part, _, _) = v_desired[0]
+        path = path + [part]
+        print(f"{' > '.join(path)}")
+        choice = self.interactive_pick(self.registry.find(part))
+        print("")
+        if choice is self.NO_SELECTION:
+            return None
+        else:
+            children = {
+                inp: self.interactive_build_tree(
+                    choice.inputs.project(inp),
+                    path,
+                )
+                for inp in choice.inputs.nonzero_components
+            }
+            return (choice, children)
+
+
+class ProcessRegistry:
+
+    def __init__(self, factory):
+        self.factory = factory
+        self._registry = []
+        self._output_index = {}
+        self._term_index = {}
+
+    def register(self, process):
+        self._registry.append(process)
+        index = len(self._registry) - 1
+        for part in process.outputs.components:
+            self._output_index[part] = (
+                self._output_index.get(part, []) + [index]
+            )
+            for term in self._terms(part):
+                self._term_index[term.lower()] = (
+                    self._term_index.get(term.lower(), []) + [index]
+                )
+
+    def _terms(self, s):
+        return s.lower().replace("-", " ").split()
+
+    def find(self, part):
+        return [self._registry[i] for i in self._output_index.get(part, [])]
+
+    def fuzzy(self, terms):
+        return [
+            self._registry[i]
+            for i in reduce(
+                set.intersection,
+                [
+                    set(self._term_index.get(term.lower(), []))
+                    for term in terms.split()
+                ],
+            )
+        ]
+
+    def filter(self, predicate):
+        return [p for p in self._registry if predicate(p)]
+
+    def register_from_lines(self, lines):
+        for p in self.factory.processes_from_lines(lines):
+            self.register(p)
+        return self
+
+
+class ProcessFactory:
+
+    def __init__(self, kind, process_kind):
+        self.kind = kind
+        self.process_kind = process_kind
+
+    def specs_from_lines(self, lines):
+        found = False
+        buf = ""
+
+        for line in lines:
+
+            if not line.strip() or line.strip().startswith("#"):
+                if found:
+                    yield parse_process(buf)
+                    buf = ""
+                    found = False
+
+            else:
+                buf += line + "\n"
+                found = True
+
+    def processes_from_lines(self, lines):
+        return (
+            self.process_kind.from_dict(self.kind, entry)
+            for entry in self.specs_from_lines(lines)
+        )
 
 
 class Process:
 
     @classmethod
     def from_dict(cls, kind, dic):
+        reserved = [
+            "outputs",
+            "inputs",
+            "cost",
+            "seconds",
+        ]
         return cls(
             kind.parse(dic["outputs"]),
             inputs=kind.parse(dic["inputs"]) if "inputs" in dic else None,
             cost=kind.parse(dic["cost"]) if "cost" in dic else None,
             seconds=float(dic.get("seconds", 0)),
             name=dic.get("name"),
+            metadata={k: dic[k] for k in dic if k not in reserved},
         )
 
     @classmethod
@@ -31,66 +176,6 @@ class Process:
         )
         return cls(outputs, inputs=inputs, **kwargs)
 
-    @classmethod
-    def parse_process(cls, s):
-        stripped_lines = (line.strip() for line in s.splitlines())
-        lines = [
-            line for line in stripped_lines
-            if line and not line.startswith("#")
-        ]
-
-        if len(lines) == 0:
-            raise ValueError(f"No substantive lines in (next line):\n{s}")
-        elif len(lines) == 1:
-            return cls._parse_process_header(lines[0])
-        elif len(lines) == 2:
-            return {
-                **cls._parse_process_header(lines[0]),
-                "inputs": lines[1],
-            }
-        else:
-            raise ValueError(f"Found too many lines in (next line):\n{s}")
-
-    @classmethod
-    def _parse_process_header(cls, s):
-        # 5 ingredient + 2 other ingredient | attribute1=foo bar | attribute2=3
-        # 5 ingredient + 2 other ingredient | attribute1=foo bar attribute2=3
-        # 5 ingredient + 2 other ingredient
-        segments = re.split(r'\s*\|\s*', s)
-
-        # Only the first segment mark `|` is important.  Others are for
-        # legibility only.  We ignore the other segment marks by
-        # re-joining the subsequent tokens.
-        if len(segments) > 1:
-            (product_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
-        else:
-            (product_raw, attributes_raw) = (segments[0], "")
-
-        # Parse the attributes.
-        #
-        # They will generally be a space-free identifier followed
-        # by an equals, then arbitrary data until another attr= or
-        # end of line.
-        # foo1=some data foo2=other foo3=8
-        #
-        # There is syntactic sugar though, and we expand that
-        # first.
-        attributes_raw = re.sub(r'(\S+):', r'name=\1', attributes_raw)
-        keys = [
-            (m.group(1), m.span())
-            for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
-        ]
-        end_pad = [(None, (None, None))]
-
-        attributes = {}
-        for ((k, (_, start)), (_, (end, _))) in zip(keys, keys[1:] + end_pad):
-            attributes[k] = attributes_raw[start:end].strip()
-
-        return {
-            "outputs": product_raw,
-            **attributes,
-        }
-
     def __init__(
         self,
         outputs,
@@ -98,11 +183,13 @@ class Process:
         cost=None,
         seconds=0,
         name=None,
+        metadata=None,
     ):
         self.name = name or "produce"
         self.outputs = outputs
         self.inputs = inputs or type(self.outputs).zero()
         self.transfer = self.outputs - self.inputs
+        self.metadata = metadata or {}
 
         in_kind = type(self.inputs)
         out_kind = type(self.outputs)
@@ -121,9 +208,15 @@ class Process:
         self.cost = cost or self.kind.zero()
         self.seconds = seconds
 
-        self.cost_rate = (1/self.seconds) * self.cost
-        self.output_rate = (1/self.seconds) * self.outputs
-        self.input_rate = (1/self.seconds) * self.inputs
+        if self.seconds:
+            self.cost_rate = (1/self.seconds) * self.cost
+            self.output_rate = (1/self.seconds) * self.outputs
+            self.input_rate = (1/self.seconds) * self.inputs
+        else:
+            self.cost_rate = self.cost
+            self.output_rate = self.outputs
+            self.input_rate = self.inputs
+
         self.transfer_rate = self.output_rate - self.input_rate
 
     def __repr__(self):
@@ -143,13 +236,6 @@ class Process:
 
 
 class JoinedProcess(Process):
-
-    @classmethod
-    def from_chain(cls, sequence, max_value=64, name=None):
-        process = chain_with_multiplicities(sequence, max_value=max_value)
-        # Ew, but so it goes
-        process.name = name
-        return process
 
     def __init__(
         self,
@@ -229,113 +315,116 @@ class JoinedProcess(Process):
         return [left, right]
 
 
-def find_multiplicity(
-    process1,
-    process2,
-    on=None,
-    max_value=None,
-    max_error=None,
-):
-    if process1.seconds == 0 or process2.seconds == 0:
-        raise ValueError(
-            "Processes are not continuous, multiplicity does not make sense."
+def parse_process(s):
+    stripped_lines = (line.strip() for line in s.splitlines())
+    lines = [
+        line for line in stripped_lines
+        if line and not line.startswith("#")
+    ]
+
+    if len(lines) == 0:
+        raise ValueError(f"No substantive lines in (next line):\n{s}")
+    elif len(lines) == 1:
+        return _parse_process_header(lines[0])
+    elif len(lines) == 2:
+        return {
+            **_parse_process_header(lines[0]),
+            "inputs": lines[1],
+        }
+    else:
+        raise ValueError(f"Found too many lines in (next line):\n{s}")
+
+
+def _parse_process_header(s):
+    # 5 ingredient + 2 other ingredient | attribute1=foo bar | attribute2=3
+    # 5 ingredient + 2 other ingredient | attribute1=foo bar attribute2=3
+    # 5 ingredient + 2 other ingredient
+    segments = re.split(r'\s*\|\s*', s)
+
+    # Only the first segment mark `|` is important.  Others are for
+    # legibility only.  We ignore the other segment marks by
+    # re-joining the subsequent tokens.
+    if len(segments) > 1:
+        (product_raw, attributes_raw) = (segments[0], " ".join(segments[1:]))
+    else:
+        (product_raw, attributes_raw) = (segments[0], "")
+
+    # Parse the attributes.
+    #
+    # They will generally be a space-free identifier followed
+    # by an equals, then arbitrary data until another attr= or
+    # end of line.
+    # foo1=some data foo2=other foo3=8
+    #
+    # There is syntactic sugar though, and we expand that
+    # first.
+    attributes_raw = re.sub(r'(\S+):', r'name=\1', attributes_raw)
+    keys = [
+        (m.group(1), m.span())
+        for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
+    ]
+    end_pad = [(None, (None, None))]
+
+    attributes = {}
+    for ((k, (_, start)), (_, (end, _))) in zip(keys, keys[1:] + end_pad):
+        # Try to interpret each attribute as a valid JSON primitive; otherwise
+        # take the literal string
+        try:
+            attributes[k] = json.loads(attributes_raw[start:end].strip())
+        except json.decoder.JSONDecodeError:
+            attributes[k] = attributes_raw[start:end].strip()
+
+    return {
+        "outputs": product_raw,
+        **attributes,
+    }
+
+
+def _densify(dict_lst):
+    keys = list(
+        unique(
+            chain.from_iterable(dic.keys() for dic in dict_lst)
         )
+    )
+    dense = [
+        [dic.get(k, 0) for k in keys]
+        for dic in dict_lst
+    ]
+    return {
+        "dense": dense,
+        "keys": keys,
+    }
 
-    p1_out = process1.outputs.components
-    p2_in = process2.inputs.components
-    compatible = [x for x in p1_out if x in p2_in]
 
-    if not compatible:
-        raise ValueError(
-            f"Processes have no compatible components: "
-            f"{p1_out.keys()} vs {p2_in.keys()}"
-        )
-
-    if on is not None and on not in compatible:
-        raise ValueError(
-            f"Provided value {on=} is not a compatible component: {compatible}"
-        )
-
-    if on is None and len(compatible) > 1:
-        raise ValueError(
-            f"Multiple compatible components: {compatible}.  Provide `on` to "
-            f"disambiguate."
-        )
-
-    if on is None and len(compatible) == 1:
-        on = compatible[0]
-
-    # Now we have an `on` which is in the list of compatible components
-
-    actual_ratio = process2.input_rate[on] / process1.output_rate[on]
-
-    (a, b) = best_convergent(
-        actual_ratio,
-        max_value=max_value,
-        max_error=max_error,
+def process_constraint_matrix(edges):
+    return _densify(
+        [
+            {src: src.output_rate[on], dest: -dest.input_rate[on]}
+            for (on, src, dest) in edges
+        ]
     )
 
-    error = a/b - actual_ratio
 
-    return {
-        "actual": actual_ratio,
-        "ratio": (a, b),
-        "error": error,
-    }
+def solve_milp(dense, keys, max_leak=1, max_repeat=180):
+    c = np.ones(len(keys))
+    A = np.array(dense)
+    b_u = max_leak*np.ones(len(dense))
+    b_l = np.zeros(len(dense))
 
+    constraints = LinearConstraint(A, b_l, b_u)
+    integrality = np.ones_like(c)
+    bounds = Bounds(lb=np.ones_like(c), ub=max_repeat*np.ones_like(c))
 
-def chain_multiplicities(multiplicities):
-    # Need an extra element on the end so the sliding window has the last REAL
-    # element in the "left" tuple position at some point.
-    #
-    # Any data computed regarding the "right" tuple position in that iteration
-    # will be discarded (it will carry over to the next iteration, but no other
-    # iterations will be processed).
-    #
-    with_terminal = chain(multiplicities, [(1, 1)])
+    res = milp(
+        c=c,
+        constraints=constraints,
+        integrality=integrality,
+        bounds=bounds,
+    )
 
-    last_left2 = None
-    next_coeff = 1
-    left_coeff = 1
-    for ((left1, left2), (right1, _)) in sliding_window(2, with_terminal):
-        # The GCD will tell us how many copies of either the left or right
-        # process is necessary to align b and c (which refer to the same
-        # process).  mult*c/gcd is the number of copies of the LEFT process to
-        # line up with b/gcd of the RIGHT process.
-        #
-        last_left2 = left2
-        gcd = math.gcd(next_coeff*left2, right1)
-        left_coeff = int(next_coeff*right1/gcd)
-        next_coeff = int(next_coeff*left2/gcd)
-        yield left1 * left_coeff
-
-    yield left_coeff * last_left2
+    return dict(zip(keys, map(int, res.x)))
 
 
-def find_multiplicities(sequence, **kwargs):
-    ratio_sequence = [
-        find_multiplicity(a, b, **kwargs)
-        for (a, b) in sliding_window(2, sequence)
-    ]
-    multiplicities = [x["ratio"] for x in ratio_sequence]
-    chained = list(chain_multiplicities(multiplicities))
-    return {
-        "counts": chained,
-        "errors": [
-            x["error"]*mult for (x, mult) in zip(ratio_sequence, chained)
-        ],
-    }
-
-
-def chain_with_multiplicities(sequence, **kwargs):
-    sequence = list(sequence)
-    multiplicities = find_multiplicities(sequence, **kwargs)["counts"]
-
-    m_acc = multiplicities[0]
-    p_acc = sequence[0]
-
-    for (m, p) in zip(multiplicities[1:], sequence[1:]):
-        p_acc = JoinedProcess(p_acc, p, m_acc, m)
-        m_acc = 1
-
-    return p_acc
+def balance_process_tree(edges, max_leak=1, max_repeat=180):
+    (dense, keys) = get(["dense", "keys"], process_constraint_matrix(edges))
+    return solve_milp(dense, keys, max_leak=max_leak, max_repeat=max_repeat)
