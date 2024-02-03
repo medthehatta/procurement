@@ -1,6 +1,7 @@
 from functools import reduce
 from itertools import chain
 import json
+from uuid import uuid1
 import re
 
 from cytoolz import unique
@@ -18,10 +19,13 @@ class InteractiveRegistryExplorer:
     def __init__(self, registry):
         self.registry = registry
 
-    def interactive_pick(self, options):
+    def interactive_pick(self, options, auto_if_solo=False):
         enumerated = list(enumerate(options, start=1))
 
         indexed = {str(i): opt for (i, opt) in enumerated}
+
+        if auto_if_solo and len(options) == 1:
+            return options[0]
 
         while True:
             print("Make a selection:")
@@ -29,12 +33,12 @@ class InteractiveRegistryExplorer:
             for (i, opt) in enumerated:
                 print(f"{i}) {opt}")
 
-            choice = input("Choice (A to abort, empty for 1): ").strip()
+            choice = input("Choice (S to skip, empty for 1): ").strip()
 
             if not choice:
                 choice = "1"
 
-            if choice.strip().lower() == "a":
+            if choice.strip().lower() == "s":
                 return self.NO_SELECTION
 
             if choice in indexed:
@@ -42,8 +46,18 @@ class InteractiveRegistryExplorer:
             else:
                 print("Invalid choice, try again.\n")
 
-    def interactive_build_tree(self, desired, path=None):
+    def interactive_build_edgelist(
+        self,
+        desired,
+        parent=None,
+        path=None,
+        auto_if_solo=True,
+        no_recurse_part=None,
+        no_recurse_path=None,
+    ):
         path = path or []
+        no_recurse_part = no_recurse_part or []
+        no_recurse_path = no_recurse_path or []
 
         v_desired = desired.triples()
         if len(v_desired) != 1:
@@ -52,21 +66,35 @@ class InteractiveRegistryExplorer:
             )
 
         (part, _, _) = v_desired[0]
+        if part in no_recurse_part:
+            return None
+
         path = path + [part]
-        print(f"{' > '.join(path)}")
-        choice = self.interactive_pick(self.registry.find(part))
+        if path in no_recurse_path:
+            return None
+
+        printable_path = ' > '.join(path)
+        print(printable_path)
+        choice = self.interactive_pick(
+            self.registry.find(part),
+            auto_if_solo=auto_if_solo,
+        )
         print("")
         if choice is self.NO_SELECTION:
             return None
         else:
-            children = {
-                inp: self.interactive_build_tree(
+            choice = choice.copy(printable_path)
+            if parent:
+                yield (part, choice, parent)
+            for inp in choice.inputs.nonzero_components:
+                yield from self.interactive_build_edgelist(
                     choice.inputs.project(inp),
-                    path,
+                    parent=choice,
+                    path=path,
+                    auto_if_solo=auto_if_solo,
+                    no_recurse_part=no_recurse_part,
+                    no_recurse_path=no_recurse_path,
                 )
-                for inp in choice.inputs.nonzero_components
-            }
-            return (choice, children)
 
 
 class ProcessRegistry:
@@ -92,8 +120,27 @@ class ProcessRegistry:
     def _terms(self, s):
         return s.lower().replace("-", " ").split()
 
+    def only(self, part):
+        candidates = self.find(part)
+        if len(candidates) == 0:
+            raise ValueError(f"No matches for '{part}'")
+        elif len(candidates) == 1:
+            return candidates[0]
+        else:
+            raise ValueError(f"Ambiguous matches for '{part}': {candidates}")
+
     def find(self, part):
-        return [self._registry[i] for i in self._output_index.get(part, [])]
+        return [
+            self._registry[i]
+            for i in self._output_index.get(part, [])
+        ]
+
+    def first(self, part):
+        candidates = self.find(part)
+        if len(candidates) == 0:
+            raise ValueError(f"No matches for '{part}'")
+        else:
+            return candidates[0]
 
     def fuzzy(self, terms):
         return [
@@ -159,7 +206,7 @@ class Process:
             kind.parse(dic["outputs"]),
             inputs=kind.parse(dic["inputs"]) if "inputs" in dic else None,
             cost=kind.parse(dic["cost"]) if "cost" in dic else None,
-            seconds=float(dic.get("seconds", 0)),
+            seconds=float(dic.get("seconds", 1)),
             name=dic.get("name"),
             metadata={k: dic[k] for k in dic if k not in reserved},
         )
@@ -181,14 +228,16 @@ class Process:
         outputs,
         inputs=None,
         cost=None,
-        seconds=0,
+        seconds=1,
         name=None,
+        copy_id=None,
         metadata=None,
     ):
         self.name = name or "produce"
         self.outputs = outputs
         self.inputs = inputs or type(self.outputs).zero()
         self.transfer = self.outputs - self.inputs
+        self.copy_id = copy_id
         self.metadata = metadata or {}
 
         in_kind = type(self.inputs)
@@ -208,111 +257,35 @@ class Process:
         self.cost = cost or self.kind.zero()
         self.seconds = seconds
 
-        if self.seconds:
-            self.cost_rate = (1/self.seconds) * self.cost
-            self.output_rate = (1/self.seconds) * self.outputs
-            self.input_rate = (1/self.seconds) * self.inputs
-        else:
-            self.cost_rate = self.cost
-            self.output_rate = self.outputs
-            self.input_rate = self.inputs
+        self.cost_rate = (1/self.seconds) * self.cost
+        self.output_rate = (1/self.seconds) * self.outputs
+        self.input_rate = (1/self.seconds) * self.inputs
 
         self.transfer_rate = self.output_rate - self.input_rate
 
     def __repr__(self):
-        if self.seconds == 0:
-            return f"<{type(self).__name__}: {self.name} ({self.outputs})>"
+        if self.copy_id:
+            return (
+                f"<{self.name} ({self.copy_id}) ({self.output_rate})>"
+            )
         else:
             return (
-                f"<{type(self).__name__}: {self.name} "
-                f"({self.output_rate})/s>"
+                f"<{self.name} ({self.output_rate})>"
             )
-
-    def is_batch(self):
-        return self.seconds == 0
 
     def is_free(self):
         return self.cost == self.kind.zero()
 
-
-class JoinedProcess(Process):
-
-    def __init__(
-        self,
-        process1,
-        process2,
-        num_process1=1,
-        num_process2=1,
-        name=None,
-    ):
-        if process1.kind is not process2.kind:
-            raise ValueError(
-                f"The processes do not have compatible kinds.  "
-                f"They have {process1.kind} and {process2.kind} "
-                f"respectively."
-            )
-
-        self.name = name
-
-        self.kind = process1.kind
-        self.p1 = process1
-        self.p2 = process2
-        self.num_p1 = num_process1
-        self.num_p2 = num_process2
-
-        self.seconds = (
-            self.num_p1*self.p1.seconds + self.num_p2*self.p2.seconds
+    def copy(self, copy_id=None):
+        return type(self)(
+            outputs=self.outputs,
+            inputs=self.inputs,
+            cost=self.cost,
+            seconds=self.seconds,
+            name=self.name,
+            copy_id=copy_id or uuid1().hex,
+            metadata=self.metadata,
         )
-
-        self.cost = self.num_p1*self.p1.cost + self.num_p2*self.p2.cost
-        self.transfer = (
-            self.num_p2*self.p2.transfer + self.num_p1*self.p1.transfer
-        )
-
-        self.outputs = self.kind.from_triples(
-            (n, v, b) for (n, v, b) in self.transfer.triples()
-            if v > 0
-        )
-        self.inputs = -self.kind.from_triples(
-            (n, v, b) for (n, v, b) in self.transfer.triples()
-            if v < 0
-        )
-
-        self.cost_rate = (
-            self.num_p1*self.p1.cost_rate + self.num_p2*self.p2.cost_rate
-        )
-        self.transfer_rate = (
-            self.num_p1*self.p1.transfer_rate +
-            self.num_p2*self.p2.transfer_rate
-        )
-
-        self.output_rate = self.kind.from_triples(
-            (n, v, b) for (n, v, b) in self.transfer_rate.triples()
-            if v > 0
-        )
-        self.input_rate = -self.kind.from_triples(
-            (n, v, b) for (n, v, b) in self.transfer_rate.triples()
-            if v < 0
-        )
-
-    def __repr__(self):
-        if self.name is None:
-            return f"{self.p1} | {self.p2}"
-        else:
-            return super().__repr__()
-
-    def process_tree(self):
-        if isinstance(self.p1, JoinedProcess):
-            left = self.p1.process_tree()
-        else:
-            left = (self.num_p1, self.p1)
-
-        if isinstance(self.p2, JoinedProcess):
-            right = self.p2.process_tree()
-        else:
-            right = (self.num_p2, self.p2)
-
-        return [left, right]
 
 
 def parse_process(s):
@@ -422,9 +395,16 @@ def solve_milp(dense, keys, max_leak=0, max_repeat=180):
         bounds=bounds,
     )
 
-    return dict(zip(keys, map(int, res.x)))
+    if res.success:
+        return dict(zip(keys, map(int, res.x)))
+    else:
+        raise ValueError("No solution found")
 
 
 def balance_process_tree(edges, max_leak=0, max_repeat=180):
     (dense, keys) = get(["dense", "keys"], process_constraint_matrix(edges))
     return solve_milp(dense, keys, max_leak=max_leak, max_repeat=max_repeat)
+
+
+def net_transfer(kind, balance_dict):
+    return kind.sum(v*k.transfer_rate for (k, v) in balance_dict.items())
