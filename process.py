@@ -83,13 +83,13 @@ class InteractiveRegistryExplorer:
         if choice is self.NO_SELECTION:
             return None
         else:
-            choice = choice.copy(printable_path)
+            instance = choice.instance(printable_path)
             if parent:
-                yield (part, choice, parent)
-            for inp in choice.inputs.nonzero_components:
+                yield (part, instance, parent)
+            for inp in instance.inputs.nonzero_components:
                 yield from self.interactive_build_edgelist(
-                    choice.inputs.project(inp),
-                    parent=choice,
+                    instance.inputs.project(inp),
+                    parent=instance,
                     path=path,
                     auto_if_solo=auto_if_solo,
                     no_recurse_part=no_recurse_part,
@@ -207,7 +207,7 @@ class Process:
             inputs=kind.parse(dic["inputs"]) if "inputs" in dic else None,
             cost=kind.parse(dic["cost"]) if "cost" in dic else None,
             seconds=float(dic.get("seconds", 1)),
-            name=dic.get("name"),
+            process=dic.get("process"),
             metadata={k: dic[k] for k in dic if k not in reserved},
         )
 
@@ -229,15 +229,15 @@ class Process:
         inputs=None,
         cost=None,
         seconds=1,
-        name=None,
-        copy_id=None,
+        process=None,
+        instance_id=None,
         metadata=None,
     ):
-        self.name = name or "produce"
+        self.process = process or "produce"
         self.outputs = outputs
         self.inputs = inputs or type(self.outputs).zero()
         self.transfer = self.outputs - self.inputs
-        self.copy_id = copy_id
+        self.instance_id = instance_id
         self.metadata = metadata or {}
 
         in_kind = type(self.inputs)
@@ -264,26 +264,26 @@ class Process:
         self.transfer_rate = self.output_rate - self.input_rate
 
     def __repr__(self):
-        if self.copy_id:
+        if self.instance_id:
             return (
-                f"<{self.name} ({self.copy_id}) ({self.output_rate})>"
+                f"<{self.process} ({self.instance_id}) ({self.output_rate})>"
             )
         else:
             return (
-                f"<{self.name} ({self.output_rate})>"
+                f"<{self.process} ({self.output_rate})>"
             )
 
     def is_free(self):
         return self.cost == self.kind.zero()
 
-    def copy(self, copy_id=None):
+    def instance(self, instance_id=None):
         return type(self)(
             outputs=self.outputs,
             inputs=self.inputs,
             cost=self.cost,
             seconds=self.seconds,
-            name=self.name,
-            copy_id=copy_id or uuid1().hex,
+            process=self.process,
+            instance_id=instance_id or uuid1().hex,
             metadata=self.metadata,
         )
 
@@ -331,7 +331,7 @@ def _parse_process_header(s):
     #
     # There is syntactic sugar though, and we expand that
     # first.
-    attributes_raw = re.sub(r'(\S+):', r'name=\1', attributes_raw)
+    attributes_raw = re.sub(r'^\s*(.+):', r'process=\1', attributes_raw)
     keys = [
         (m.group(1), m.span())
         for m in re.finditer(r'([A-Za-z_][A-Za-z_0-0]*)=', attributes_raw)
