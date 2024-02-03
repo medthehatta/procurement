@@ -6,6 +6,7 @@ import re
 
 from cytoolz import unique
 from cytoolz import get
+from cytoolz import curry
 import numpy as np
 from scipy.optimize import milp
 from scipy.optimize import LinearConstraint
@@ -24,7 +25,9 @@ class InteractiveRegistryExplorer:
 
         indexed = {str(i): opt for (i, opt) in enumerated}
 
-        if auto_if_solo and len(options) == 1:
+        if auto_if_solo and len(options) == 0:
+            return self.NO_SELECTION
+        elif auto_if_solo and len(options) == 1:
             return options[0]
 
         while True:
@@ -54,10 +57,12 @@ class InteractiveRegistryExplorer:
         auto_if_solo=True,
         no_recurse_part=None,
         no_recurse_path=None,
+        predicate=None,
     ):
         path = path or []
         no_recurse_part = no_recurse_part or []
         no_recurse_path = no_recurse_path or []
+        predicate = predicate or (lambda x: True)
 
         v_desired = desired.triples()
         if len(v_desired) != 1:
@@ -76,7 +81,7 @@ class InteractiveRegistryExplorer:
         printable_path = ' > '.join(path)
         print(printable_path)
         choice = self.interactive_pick(
-            self.registry.find(part),
+            self.registry.search(predicate, part=part),
             auto_if_solo=auto_if_solo,
         )
         print("")
@@ -94,7 +99,49 @@ class InteractiveRegistryExplorer:
                     auto_if_solo=auto_if_solo,
                     no_recurse_part=no_recurse_part,
                     no_recurse_path=no_recurse_path,
+                    predicate=predicate,
                 )
+
+
+class Predicates:
+
+    @classmethod
+    @curry
+    def and_(cls, pred1, pred2, process):
+        return pred1(process) and pred2(process)
+
+    @classmethod
+    @curry
+    def or_(cls, pred1, pred2, process):
+        return pred1(process) or pred2(process)
+
+    @classmethod
+    @curry
+    def not_(cls, predicate, process):
+        return not predicate(process)
+
+    @classmethod
+    @curry
+    def outputs_part(cls, part, process):
+        return part in process.output_rate.nonzero_components
+
+    @classmethod
+    @curry
+    def requires_part(cls, part, process):
+        return part in process.input_rate.nonzero_components
+
+    @classmethod
+    @curry
+    def does_not_cost(cls, part, process):
+        return part not in process.cost_rate.nonzero_components
+
+    @classmethod
+    def costs(cls, part, process):
+        return part in process.cost_rate.nonzero_components
+
+    @classmethod
+    def non_character(cls, process):
+        return process.process != "character"
 
 
 class ProcessRegistry:
@@ -128,6 +175,12 @@ class ProcessRegistry:
             return candidates[0]
         else:
             raise ValueError(f"Ambiguous matches for '{part}': {candidates}")
+
+    def search(self, predicate, part=None):
+        if part is not None:
+            return [p for p in self.find(part) if predicate(p)]
+        else:
+            return [p for p in self._registry if predicate(p)]
 
     def find(self, part):
         return [
@@ -408,3 +461,18 @@ def balance_process_tree(edges, max_leak=0, max_repeat=180):
 
 def net_transfer(kind, balance_dict):
     return kind.sum(v*k.transfer_rate for (k, v) in balance_dict.items())
+
+
+def net_process(kind, edges, balance_dict, **kwargs):
+    # FIXME: This is wrong, because two different processes consuming the same
+    # inputs will not necessarily share those inputs evenly.  Ok for now as a
+    # first pass.
+    transfer = kind.sum(v*k.transfer_rate for (k, v) in balance_dict.items())
+    cost = kind.sum(v*k.cost_rate for (k, v) in balance_dict.items())
+    seconds = 1
+    return Process.from_transfer(
+        transfer,
+        cost=cost,
+        seconds=seconds,
+        **kwargs,
+    )
