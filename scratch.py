@@ -137,7 +137,7 @@ def interactive_build_net_process(
         )
     )
     balance = proc.balance_process_tree(edges, max_repeat=max_repeat, max_leak=max_leak)
-    net = proc.net_process(Ingredients, edges, balance)
+    net = proc.net_process(Ingredients, edges, balance["answer"])
     return {
         "edges": edges,
         "balance": balance,
@@ -176,11 +176,24 @@ def bisect_find_down(finder, kwarg_dict, direction=None, tol=0.5):
     while True:
         sample = _midpoint(lower, upper)
         args = {**kwarg_dict, direction: sample}
-        print(args)
         success = finder(**args)
         if success:
             upper = sample
         else:
             lower = sample
         if (upper - lower) <= tol:
-            return (lower, sample, upper)
+            return args
+
+
+def bisect(*args, **kwargs):
+
+    def _bisect(direction, dic):
+        print(dic)
+        return bisect_find_down(
+            _try(partial(interactive_build_net_process, *args, **kwargs)),
+            dic,
+            direction=direction,
+            tol=1,
+        )
+
+    return _bisect

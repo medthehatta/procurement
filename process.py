@@ -449,7 +449,10 @@ def solve_milp(dense, keys, max_leak=0, max_repeat=180):
     )
 
     if res.success:
-        return dict(zip(keys, map(int, res.x)))
+        return {
+            "answer": dict(zip(keys, map(int, res.x))),
+            "result": res,
+        }
     else:
         raise ValueError("No solution found")
 
