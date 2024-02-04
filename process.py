@@ -457,9 +457,48 @@ def solve_milp(dense, keys, max_leak=0, max_repeat=180):
         raise ValueError("No solution found")
 
 
+def best_milp_sequence(dense, keys):
+    max_leak = 10000
+    max_repeat = 500
+    last = None
+
+    try:
+        soln = solve_milp(dense, keys, max_leak=max_leak, max_repeat=max_repeat)
+    except ValueError:
+        return
+    else:
+        last = soln["result"].x
+        leaks = dense @ soln["result"].x
+        max_leak = 0.9 * max(leaks)
+        yield (max_leak, soln["answer"])
+
+    while True:
+        try:
+            soln = solve_milp(
+                dense,
+                keys,
+                max_leak=max_leak,
+                max_repeat=max_repeat,
+            )
+        except ValueError:
+            return
+        else:
+            if (soln["result"].x == last).all():
+                return
+            last = soln["result"].x
+            leaks = dense @ soln["result"].x
+            max_leak = 0.9 * max(leaks)
+            yield (max_leak, soln["answer"])
+
+
 def balance_process_tree(edges, max_leak=0, max_repeat=180):
     (dense, keys) = get(["dense", "keys"], process_constraint_matrix(edges))
     return solve_milp(dense, keys, max_leak=max_leak, max_repeat=max_repeat)
+
+
+def balance_process_tree_seq(edges):
+    (dense, keys) = get(["dense", "keys"], process_constraint_matrix(edges))
+    return list(best_milp_sequence(dense, keys))
 
 
 def net_transfer(kind, balance_dict):
