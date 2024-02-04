@@ -53,7 +53,7 @@ sequence = [
 ]
 
 
-fac = proc.ProcessFactory(Ingredients, Process)
+fac = proc.ProcessFactory(Ingredients, Process, default_process="assembler")
 
 
 sample = """
@@ -127,7 +127,11 @@ def interactive_build_net_process(
     no_recurse_path=None,
     predicate=None,
 ):
-    edges = list(
+    # We get the edges, plus the first element is a "special" edge leading from
+    # the final process to nothing.  We need this in case there is exactly one
+    # process required to create the desired output: in this case there are no
+    # edges, but there are processes we want to know about!
+    (output, *edges) = list(
         exp.interactive_build_edgelist(
             desired,
             auto_if_solo=auto_if_solo,
@@ -136,13 +140,27 @@ def interactive_build_net_process(
             predicate=predicate,
         )
     )
-    balance = proc.balance_process_tree(edges, max_repeat=max_repeat, max_leak=max_leak)
-    net = proc.net_process(Ingredients, edges, balance["answer"])
-    return {
-        "edges": edges,
-        "balance": balance,
-        "net": net,
-    }
+    # Single process is a special case.  This cannot be balanced, it's always
+    # balanced!
+    if not edges:
+        return [
+            {
+                "edges": [output],
+                "balance": {output: 1},
+                "leakage": 0.0,
+                "net": output,
+            }
+        ]
+    else:
+        return [
+            {
+                "edges": edges,
+                "balance": balance,
+                "leakage": leakage,
+                "net": proc.net_process(Ingredients, edges, balance),
+            }
+            for (leakage, balance) in proc.balance_process_tree_seq(edges)
+        ]
 
 
 i = Ingredients.lookup

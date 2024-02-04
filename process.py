@@ -89,8 +89,7 @@ class InteractiveRegistryExplorer:
             return None
         else:
             instance = choice.instance(printable_path)
-            if parent:
-                yield (part, instance, parent)
+            yield (part, instance, parent)
             for inp in instance.inputs.nonzero_components:
                 yield from self.interactive_build_edgelist(
                     instance.inputs.project(inp),
@@ -218,9 +217,10 @@ class ProcessRegistry:
 
 class ProcessFactory:
 
-    def __init__(self, kind, process_kind):
+    def __init__(self, kind, process_kind, default_process):
         self.kind = kind
         self.process_kind = process_kind
+        self.default_process = default_process
 
     def specs_from_lines(self, lines):
         found = False
@@ -240,7 +240,11 @@ class ProcessFactory:
 
     def processes_from_lines(self, lines):
         return (
-            self.process_kind.from_dict(self.kind, entry)
+            self.process_kind.from_dict(
+                self.kind,
+                entry,
+                default_process=self.default_process,
+            )
             for entry in self.specs_from_lines(lines)
         )
 
@@ -248,7 +252,7 @@ class ProcessFactory:
 class Process:
 
     @classmethod
-    def from_dict(cls, kind, dic):
+    def from_dict(cls, kind, dic, default_process="process"):
         reserved = [
             "outputs",
             "inputs",
@@ -260,7 +264,7 @@ class Process:
             inputs=kind.parse(dic["inputs"]) if "inputs" in dic else None,
             cost=kind.parse(dic["cost"]) if "cost" in dic else None,
             seconds=float(dic.get("seconds", 1)),
-            process=dic.get("process"),
+            process=dic.get("process", default_process),
             metadata={k: dic[k] for k in dic if k not in reserved},
         )
 
