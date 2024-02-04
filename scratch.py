@@ -7,6 +7,7 @@ from pprint import pprint
 
 from cytoolz import sliding_window
 from cytoolz import curry
+from cytoolz import get
 
 from procurement import Ingredients
 from process import Process
@@ -140,8 +141,12 @@ def interactive_build_net_process(
             predicate=predicate,
         )
     )
-    # Single process is a special case.  This cannot be balanced, it's always
-    # balanced!
+    # If we have only an output and no edges, it just means we have a single
+    # process.  Single process is a special case.  This cannot be balanced,
+    # it's always balanced!  This "edgelist" is malformed and can't actually be
+    # used.
+    # FIXME: This is gross.  The fix is probably to use a richer graph
+    # representation, but that entails rewriting a ton of stuff.
     if not edges:
         return [
             {
@@ -176,3 +181,15 @@ def _try(finder, max_leak, max_repeat):
         return False
     else:
         return True
+
+
+def summarize_ibnp_output(x):
+    x_relevant = [get(["net", "balance"], entry) for entry in x]
+    return [
+        {
+            "transfer": net.transfer_rate,
+            # instance_id is a string; I wish it was a path list
+            "balance": {k.instance_id: v for (k, v) in balance.items()},
+        }
+        for (net, balance) in x_relevant
+    ]
