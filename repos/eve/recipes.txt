@@ -1,0 +1,334 @@
+# tritanium | buy: cost=3.24 where=scolluzer vii
+
+# pyerite | buy: cost=20 where=ichooseyou
+
+# isogen | buy: cost=700 where=ichooseyou
+
+# nocxium | buy: cost=1369 where=ichooseyou
+
+# mexallon | buy: cost=50 where=ichooseyou
+
+# zydrine | buy: cost=3695 where=tourier iii
+
+# megacyte | buy: cost=5250 where=tourier iii
+
+# strontium clathrates | buy: cost=4885 where=vay miner needs
+
+# inertial stabilizers i | buy: cost=14000 where=clellinon vi cas
+
+# inertial stabilizers i | buy: cost=18000 where=scheenins iv chemal
+
+# nanofiber internal structure i | buy: cost=11900 where=jufvitte vi roden
+
+# nanofiber internal structure i | buy: cost=12000 where=vay miner needs
+
+# expanded cargohold ii | buy: cost=540000 where=ichooseyou
+
+# micro auxiliary power core i | buy: cost=450000 where=ichooseyou
+
+# small shield extender ii | buy: cost=22000 where=ichooseyou
+
+# 50mn y-t8 compact microwarpdrive | buy: cost=800000 where=ichooseyou
+
+# improved cloaking device ii | buy: cost=5200000 where=ichooseyou
+
+# medium ancillary current router i | buy: cost=3550000 where=ichooseyou
+
+# medium cargohold optimization i | buy: cost=493400 where=ichooseyou
+
+# medium cargohold optimization ii | buy: cost=13990000 where=ichooseyou
+
+# iteron mark v | buy: cost=3700000 where=ichooseyou
+
+iteron cloak fit | fit:
+3 expanded cargohold ii + 2 micro auxiliary power core i + 3 small shield extender ii + 50mn y-t8 compact microwarpdrive + improved cloaking device ii + medium ancillary current router i + medium cargohold optimization i + medium cargohold optimization ii
+
+core scanner probe i
+11 tritanium + 12 pyerite + 28 mexallon + 11 isogen + 4 nocxium
+
+iteron mark v | mat_reduction_pct=10
+80000 tritanium + 15000 pyerite + 3750 mexallon + 2000 isogen + 750 nocxium + 125 zydrine + 70 megacyte
+
+iteron mark v
+80000 tritanium + 15000 pyerite + 3750 mexallon + 2000 isogen + 750 nocxium + 125 zydrine + 70 megacyte
+
+hobgoblin i
+509 tritanium + 7 pyerite + 4 isogen + 2 nocxium
+
+
+5 construction blocks | planetary:
+40 reactive metals + 40 toxic metals
+
+
+5 miniature electronics | planetary:
+40 silicon + 40 chiral structures
+
+
+20 chiral structures | planetary:
+3000 non-cs crystals
+
+
+20 silicon | planetary:
+3000 felsic magma
+
+
+3 smartfab units | planetary:
+10 construction blocks + 10 miniature electronics
+
+
+
+5 enriched uranium | planetary:
+40 precious metals + 40 toxic metals
+
+
+
+5 mechanical parts | planetary:
+40 precious metals + 40 reactive metals
+
+
+
+5 nanites | planetary:
+40 bacteria + 40 reactive metals
+
+
+
+5 test cultures | planetary:
+40 water + 40 bacteria
+
+
+
+5 water-cooled cpu | planetary:
+40 water + 40 reactive metals
+
+
+20 reactive metals | planetary:
+3000 base metals
+
+20 toxic metals | planetary:
+3000 heavy metals
+
+20 precious metals | planetary:
+3000 noble metals
+
+20 bacteria | planetary:
+3000 microorganisms
+
+20 water | planetary:
+3000 aqueous liquids
+
+nereus
+80000 tritanium + 15000 pyerite + 3750 mexallon + 2000 isogen + 750 nocxium + 125 zydrine + 70 megacyte
+
+astrahus
+structure construction parts + structure docking bay + structure hangar array + 4 structure market network + structure medical center + structure office center + structure repair facility + structure storage bay
+
+
+structure construction parts
+3 integrity response drones + 4000 isogen + 150 megacyte + 35000 mexallon + 5 nano-factory + 750 nocxium + 5 organic mortar applicators + 100000 pyerite + 3 recursive computing module + 3 self-harmonizing power core + 3 sterile conduits + 500000 tritanium + 350 zydrine
+
+
+integrity response drones | planetary:
+6 gel-matrix biopaste + 6 hazmat detection systems + 6 planetary vehicles
+
+3 gel-matrix biopaste | planetary:
+10 biocells + 10 oxides + 10 superconductors
+
+5 biocells | planetary:
+40 biofuels + 40 precious metals
+
+3 neocoms | planetary:
+10 biocells + 10 silicate glass
+
+3 transcranial microcontrollers | planetary:
+10 biocells + 10 nanites
+
+20 biofuels | planetary:
+3000 carbon compounds
+
+3 hazmat detection systems | planetary:
+10 polytextiles + 10 transmitter + 10 viral agent
+
+3 planetary vehicles | planetary:
+10 mechanical parts + 10 miniature electronics + 10 supertensile plastics
+
+
+combat scanner probe i
+3 tritanium + 9 pyerite + 14 mexallon + isogen + nocxium + 2 megacyte + 7 strontium clathrates
+
+
+# iron charge s | buy: cost=7 where=clellinon vi cas
+
+# antimatter charge s | buy: cost=22 where=clellinon vi cas
+
+# cap booster 200 | buy: cost=7 where=clellinon vi cas
+
+# catalyst | buy: cost=940000 where=scheenins iv chemal
+
+catalyst
+80000 tritanium + 15000 pyerite + 5000 mexallon + 1000 isogen
+
+# catalyst bpo | buy: cost=7887800 where=scolluzer vii fnls
+
+catalyst fit | fit:
+2 small explosive armor reinforcer i + 8 anode light electron particle cannon i + 2 vortex compact magnetic field stabilizer + small kinetic armor reinforcer i + 5mn cold-gas enduring microwarpdrive + small acm compact armor repairer + small f-rx compact capacitor booster
+
+# small explosive armor reinforcer i | buy: cost=592000 where=jufvitte vi roden
+
+# anode light electron particle cannon i | buy: cost=750000 where=ichooseyou
+
+# vortex compact magnetic field stabilizer | buy: cost=300000 where=alentene v duvolle
+
+# vortex compact magnetic field stabilizer | buy: cost=360000 where=ichooseyou
+
+# small kinetic armor reinforcer i | buy: cost=616300 where=ichooseyou
+
+# 5mn cold-gas enduring microwarpdrive | buy: cost=20000 where=vay miner needs
+
+# small acm compact armor repairer | buy: cost=60000 where=jufvitte vi roden
+
+# small f-rx compact capacitor booster | buy: cost=78000 where=clellinon vi cas
+
+navitas
+22800 tritanium + 4275 pyerite + 1782 mexallon + 357 isogen
+
+# navitas | buy: cost=255000 where=clellinon vi cas
+
+# atron | buy: cost=275000 where=clellinon vi cas
+
+atron
+32000 tritanium + 6000 pyerite + 2500 mexallon + 500 isogen
+
+atron fit | fit:
+core probe launcher i + 5mn quad lif restrained microwarpdrive + inertial stabilizers i + 2 nanofiber internal structure i + small low friction nozzle joints i + 2 small hyperspatial velocity optimizer i
+
+# core probe launcher i | buy: cost=20000 where=alentene v duvolle
+
+# 5mn quad lif restrained microwarpdrive | buy: cost=60000 where=jufvitte vi roden
+
+# inertial stabilizers i | buy: cost=14000 where=clellinon vi cas
+
+# nanofiber internal structure i | buy: cost=12000 where=jufvitte vi roden
+
+# small low friction nozzle joints i | buy: cost=125000 where=amygnon iii fed
+
+small hyperspatial velocity optimizer i | buy: cost=190000 where=amygnon iii fed navy anchorage
+
+small low friction nozzle joints i |
+3 charred micro circuit + 4 burned logic circuit + 1 thruster console
+
+small hyperspatial velocity optimizer i |
+3 charred micro circuit + 4 burned logic circuit + 3 thruster console
+
+# charred micro circuit | buy: cost=241 where=clellinon vi cas
+
+# burned logic circuit | buy: cost=10000 where=cistuvaert v cas
+
+# thruster console | buy: cost=20000 where=cat vi fed
+
+# covetor | buy: cost=61500000 where=clellinon vi cas
+
+covetor fit | fit:
+10mn y-s8 compact afterburner + 3 mining laser upgrade ii + 2 strip miner i + medium processor overclocking unit i
+
+# 10mn y-s8 compact afterburner | buy: cost=70000 where=clellinon vi cas
+
+# mining laser upgrade ii | buy: cost=900000 where=stou iv astral
+
+# strip miner i | buy: cost=4857000 where=ichooseyou
+
+# medium processor overclocking unit | buy: cost=400000 where=tourier iii republic
+
+# algos | buy: cost=1101000 where=jufvitte vi roden
+
+algos fit | fit:
+5 125mm prototype gauss gun + 1mn y-s8 compact afterburner + damage control i + drone damage amplifier i + f-12 enduring tracking computer + small cap battery i + small capacitor control circuit i + small i-a enduring armor repairer + small processor overclocking unit i + small transverse bulkhead i 
+
+# 125mm prototype gauss gun | buy: cost=585000 where=clellinon vi cas
+ 
+# 1mn y-s8 compact afterburner | buy: cost=3680 where=ichooseyou
+ 
+# damage control i | buy: cost=10000 where=jufvitte vi roden
+
+# drone damage amplifier i | buy: cost=75000 where=clellinon vi cas
+ 
+# f-12 enduring tracking computer | buy: cost=9807 where=ichooseyou
+ 
+# small cap battery i | buy: cost=30140 where=ichooseyou
+ 
+# small capacitor control circuit i | buy: cost=180900 where=jufvitte vi roden
+ 
+# small i-a enduring armor repairer | buy: cost=28800 where=vay i core
+ 
+# small processor overclocking unit i | buy: cost=110000 where=alentene vi roden
+ 
+# small transverse bulkhead i | buy: cost=400000 where=amygnon iii fed
+ 
+venture mining fit | fit:
+mining laser upgrade ii + 5mn quad lif restrained microwarpdrive + 2 miner ii
+
+venture gas huffing fit | fit:
+5mn quad lif restrained microwarpdrive + core probe launcher i + 2 gas cloud scoop i
+
+
+# 5mn quad lif restrained microwarpdrive | buy: cost=62500 where=ichooseyou
+
+# mining laser upgrade ii | buy: cost=965500 where=ichooseyou
+
+# miner ii | buy: cost=774000 where=alentene v duvolle
+
+
+# venture | buy: cost=297800 where=clellinon vi cas
+
+
+small hyperspatial velocity optimizer ii |
+micro circuit + logic circuit + impetus console + ram armor/hull tech
+
+ram armor/hull tech
+556 tritanium + 444 pyerite + 222 mexallon + 82 isogen + 36 nocxium
+
+
+small cargohold optimization i | buy: where=stacmon v fed cost=139000
+
+small auxiliary thrusters i | buy: where=stacmon v fed cost=140200
+
+small hyperspatial velocity optimizer i | buy: where=stacmon v fed cost=199900
+
+small engine thermal shielding i | buy: where=alentene vi roden cost=200000
+
+small dynamic fuel valve i | buy: where=alentene vi roden cost=200000
+
+small higgs anchor i | buy: where=alentene vi roden cost=500000
+
+small low friction nozzle joints i | buy: where=gisleres iv roden cost=125000
+
+small emission scope sharpener i | buy: where=stacmon vii impro cost=93370
+
+small signal focusing kit i | buy: where=alentene vi roden cost=275000
+
+small warp core optimizer i | buy: where=alentene vi roden cost=500000
+
+small gravity capacitor upgrade i | buy: where=stacmon v fed cost=45300
+
+small polycarbon engine housing i | buy: where=stacmon v fed cost=75830
+
+small memetic algorithm bank i | buy: where=stacmon v fed cost=49000
+
+
+buzzard exploration fit | fit:
+small low friction nozzle joints ii + small gravity capacitor upgrade ii + covert ops cloaking device ii + sisters core probe launcher + micro auxiliary power core ii +  2 inertial stabilizer ii + relic analyzer ii + 5mn y-t8 compact microwarpdrive + scan acquisition array ii + scan pinpointing array ii + scan rangefinding array ii
+
+helios exploration fit | fit:
+3 Nanofiber Internal Structure II + 5MN Y-T8 Compact Microwarpdrive + Relic Analyzer I + Data Analyzer I + Cargo Scanner I + Scan Acquisition Array I + Covert Ops Cloaking Device II + Core Probe Launcher I + 2 Small Gravity Capacitor Upgrade I
+
+
+sterile conduits | planetary:
+6 smartfab units + 6 vaccines + 40 water
+
+3 vaccines | planetary:
+10 livestock + 10 viral agent
+
+livestock | buy: cost=14500 where=dodixie
+
+viral agent | buy: cost=11900 where=dodixie
+
+water | buy: cost=525 where=dodixie

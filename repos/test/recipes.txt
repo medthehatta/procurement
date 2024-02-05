@@ -1,0 +1,72 @@
+fancy
+10 unfancy
+
+fauncy
+fauncy
+
+10 unfancy
+20 trash
+
+10 unfancy
+fancy
+
+ink of the sea
+2 azure pigment
+
+2 flask of pure mojo
+7 icethorn + 3 pygmy oil + frost lotus + enchanted vial
+
+nature protection potion
+liferoot + stranglekelp + leaded vial
+
+swiftness potion
+swiftthistle + briarthorn + leaded vial
+
+swim speed potion
+swiftthistle + blackmouth oil + leaded vial
+
+blackmouth oil
+2 oily blackmouth
+
+elixir of greater defense
+wild steelbloom + goldthorn + leaded vial
+
+lesser invisibility potion
+wild steelbloom + fadeleaf + leaded vial
+
+great feast
+chunk o' mammoth + shoveltusk flank + worm meat + 2 chilled meat
+
+fish feast
+2 musselback sculpin + 2 glacial salmon + 2 nettlefish + northern spices
+
+2 flask of pure mojo
+7 icethorn + 3 pygmy oil + frost lotus + enchanted vial
+
+scroll of enchant weapon - mighty spellpower
+30 infinite dust + 6 dream shard + 6 abyss crystal
+
+barbaric bracers
+8 heavy leather + 2 cured heavy hide + 4 small lustrous pearl + raptor hide + 4 large fang
+
+earthen leg armor
+2 arctic fur + 4 eternal earth + frozen orb
+
+frosthide leg armor
+2 arctic fur + 2 nerubian chitin + frozen orb
+
+2 flask of relentless assault
+7 terocone + 3 mana thistle + fel lotus + imbued vial
+
+glacial bag
+4 moonshroud + 4 ebonweave + eternium thread
+
+frostweave bag
+6 bolt of imbued frostweave + 2 eternium thread
+
+primal might
+primal earth + primal water + primal fire + primal air + primal mana
+
+leaded vial | procure=buy cost=1
+
+eternium thread | buy: cost=3

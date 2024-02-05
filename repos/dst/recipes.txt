@@ -1,0 +1,62 @@
+campfire
+3 grass + 2 log
+
+axe
+twig + flint
+
+pickaxe
+2 twig + 2 flint
+
+science machine
+gold + 4 log + 4 rock
+
+backpack
+4 grass + 4 twig
+
+crock pot
+3 cut stone + 6 charcoal + 6 twig
+
+cut stone
+3 rock
+
+board
+4 log
+
+chest
+3 board
+
+rope
+3 grass
+
+spear
+2 twig + rope + flint
+
+fire pit
+2 log + 12 rock
+
+torch
+2 grass + 2 twig
+
+healing salve
+2 ashes + rock + spider gland
+
+trap
+2 twig + 6 grass
+
+drying rack
+3 twig + 2 charcoal + 3 rope
+
+ice box
+2 gold + cut stone + gears
+
+alchemy engine
+4 board + 2 cut stone + 2 electrical doodad
+
+electrical doodad
+2 gold + cut stone
+
+garden jig
+3 board + 2 rope + 2 flint
+
+hoe
+2 twig + 2 flint

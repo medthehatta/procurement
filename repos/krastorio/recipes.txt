@@ -1,0 +1,111 @@
+5 basic tech card | character: seconds=20
+5 wood + 5 copper cable
+
+5 automation tech card | seconds=40
+automation core + 5 blank tech card
+
+blank tech card | seconds=4
+2 iron plate + 2 copper cable
+
+5 basic tech card | seconds=40
+5 wood + 5 copper cable
+
+8 copper cable | character: seconds=2
+4 copper plate
+
+8 copper cable | seconds=4
+4 copper plate
+
+5 copper plate | stonefurnace: seconds=16
+10 copper ore
+
+stone furnace | character: seconds=0.5
+5 stone
+
+stone furnace | seconds=1
+5 stone
+
+burner miner | character: seconds=2
+3 iron plate + 3 iron gear + stone furnace
+
+5 iron plate | stonefurnace: seconds=16
+10 iron ore
+
+4 iron gear | character: seconds=2
+4 iron plate
+
+wood chest | character: seconds=0.5
+2 wood
+
+wood chest | seconds=1
+2 wood
+
+lab | character: seconds=2
+10 copper plate + 10 copper cable + 10 iron beam
+
+lab | seconds=4
+10 copper plate + 10 copper cable + 10 iron beam
+
+iron beam | character: seconds=2
+2 iron plate
+
+iron beam | seconds=4
+2 iron plate
+
+iron ore | burnerminer: seconds=4
+
+copper ore | burnerminer: seconds=4
+
+stone | burnerminer: seconds=4
+
+coal | burnerminer: seconds=4
+
+wind turbine | character: seconds=5
+6 iron plate + 6 copper cable + 2 iron beam + 6 iron gear
+
+wind turbine | seconds=10
+6 iron plate + 6 copper cable + 2 iron beam + 6 iron gear
+
+repair pack | character: seconds=0.5
+2 stone + 2 iron plate + 2 copper plate
+
+burner inserter | seconds=1
+iron plate + inserter parts
+
+2 inserter parts | seconds=4
+4 iron stick + 4 iron gear
+
+transport belt | seconds=1
+iron plate + iron gear
+
+iron gear | seconds=4
+4 iron plate
+
+assembler | seconds=2
+4 iron beam + 5 iron gear + 2 automation core
+
+2 automation core | seconds=4
+6 copper plate + 4 iron stick + 4 iron gear
+
+8 iron stick | seconds=4
+4 iron plate
+
+20 kw | wind turbine:
+
+240 kw | ship reactor:
+
+1250 water | offshore pump:
+
+20 steam | boiler:
+20 water
+
+750 kw | steam engine:
+10 steam
+
+submachine gun | seconds=20
+3 iron plate + 2 copper plate + 5 iron gear
+
+rifle magazine | seconds=2
+2 coal + iron plate + copper plate
+
+
