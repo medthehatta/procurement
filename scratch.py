@@ -189,7 +189,7 @@ def summarize_ibnp_output(x):
         {
             "transfer": net.transfer_rate,
             # instance_id is a string; I wish it was a path list
-            "balance": {k.instance_id: v for (k, v) in balance.items()},
+            "balance": {(k.instance_id, k.process): v for (k, v) in balance.items()},
         }
         for (net, balance) in x_relevant
     ]
