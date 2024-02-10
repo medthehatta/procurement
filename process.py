@@ -505,19 +505,30 @@ def balance_process_tree_seq(edges):
     return list(best_milp_sequence(dense, keys))
 
 
-def net_transfer(kind, balance_dict):
-    return kind.sum(v*k.transfer_rate for (k, v) in balance_dict.items())
-
-
 def net_process(kind, edges, balance_dict, **kwargs):
-    # FIXME: This is wrong, because two different processes consuming the same
-    # inputs will not necessarily share those inputs evenly.  Ok for now as a
-    # first pass.
-    transfer = kind.sum(v*k.transfer_rate for (k, v) in balance_dict.items())
+    net_transfer = kind.zero()
+
+    dests = [dest for (_, _, dest) in edges]
+    leaves = list(unique(src for (_, src, _) in edges if src not in dests))
+    sources = [src for (_, src, _) in edges]
+    roots = list(unique(dest for (_, _, dest) in edges if dest not in sources))
+
+    # We don't support multi-root processes at this time
+    if len(roots) != 1:
+        raise ValueError(f"Multiple roots is an error: {roots}")
+
+    # Add root output
+    for root in roots:
+        net_transfer += balance_dict[root]*root.output_rate
+
+    # Subtract leaf input
+    for leaf in leaves:
+        net_transfer -= balance_dict[leaf]*leaf.input_rate
+
     cost = kind.sum(v*k.cost_rate for (k, v) in balance_dict.items())
     seconds = 1
     return Process.from_transfer(
-        transfer,
+        net_transfer,
         cost=cost,
         seconds=seconds,
         **kwargs,

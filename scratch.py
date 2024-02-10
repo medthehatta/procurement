@@ -1,3 +1,4 @@
+import os
 import math
 from functools import partial
 from functools import reduce
@@ -82,7 +83,10 @@ specs = list(fac.specs_from_lines(sample))
 pra = list(fac.processes_from_lines(sample))
 
 
-with open("/home/med/deploy/procurement/repos/krastorio/recipes.txt") as f:
+recipe_path = os.path.expanduser(
+    "~/deploy/procurement/repos/krastorio/recipes.txt"
+)
+with open(recipe_path) as f:
     reg = proc.ProcessRegistry(fac).register_from_lines(f)
 
 
