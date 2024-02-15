@@ -19,6 +19,9 @@ blank tech card | seconds=4
 5 copper plate | stonefurnace: seconds=16
 10 copper ore
 
+5 copper plate | steelfurnace: seconds=8
+10 copper ore
+
 stone furnace | character: seconds=0.5
 5 stone
 
@@ -29,6 +32,9 @@ burner miner | character: seconds=2
 3 iron plate + 3 iron gear + stone furnace
 
 5 iron plate | stonefurnace: seconds=16
+10 iron ore
+
+5 iron plate | steelfurnace: seconds=8
 10 iron ore
 
 4 iron gear | character: seconds=2
@@ -59,6 +65,14 @@ copper ore | burnerminer: seconds=4
 stone | burnerminer: seconds=4
 
 coal | burnerminer: seconds=4
+
+iron ore | electricdrill: seconds=2
+
+copper ore | electricdrill: seconds=2
+
+stone | electricdrill: seconds=2
+
+coal | electricdrill: seconds=2
 
 wind turbine | character: seconds=5
 6 iron plate + 6 copper cable + 2 iron beam + 6 iron gear
@@ -107,5 +121,170 @@ submachine gun | seconds=20
 
 rifle magazine | seconds=2
 2 coal + iron plate + copper plate
+
+5 logistic tech card | seconds=40
+5 iron gear + 5 green circuit + 5 blank tech card
+
+2 green circuit | seconds=4
+wood + iron plate + 4 copper cable
+
+inserter | seconds=1
+inserter parts + automation core
+
+long inserter | seconds=1
+2 iron stick + inserter parts + automation core
+
+underground belt | seconds=2
+2 iron beam + 5 transport belt
+
+splitter | seconds=2
+5 iron gear + automation core + 4 transport belt
+
+loader | seconds=4
+2 iron beam + 10 iron gear + transport belt
+
+pipe | seconds=1
+iron plate
+
+2 underground pipe | seconds=1
+5 iron plate + 10 pipe
+
+5 stone brick | stonefurnace: seconds=16
+10 stone
+
+5 stone brick | steelfurnace: seconds=8
+10 stone
+
+electric drill | seconds=4
+2 iron beam + 5 iron gear + 2 automation core
+
+turret | seconds=20
+5 iron beam + 4 iron gear + 3 automation core
+
+iron chest | seconds=1
+8 iron plate
+
+5 steel plate | stonefurnace: seconds=16
+2 coke + 10 iron plate
+
+5 steel plate | steelfurnace: seconds=8
+2 coke + 10 iron plate
+
+6 coke | stonefurnace: seconds=16
+6 wood + 6 coal
+
+6 coke | steelfurnace: seconds=8
+6 wood + 6 coal
+
+5 steel gear | seconds=4
+4 steel plate
+
+steel chest | seconds=1
+8 steel plate
+
+wood | character: seconds=1
+
+greenhouse | seconds=20
+20 wood + 20 glass + 10 iron beam + 2 automation core
+
+glass | stonefurnace: seconds=16
+16 sand
+
+glass | steelfurnace: seconds=8
+16 sand
+
+7 sand | crusher: seconds=1
+3 stone
+
+40 wood | greenhouse: seconds=60
+200 water
+
+steel furnace | seconds=6
+6 steel plate + 10 stone brick
+
+boiler | seconds=1
+4 pipe + stone furnace
+
+steam engine | seconds=10
+10 iron plate + 8 iron gear + 5 pipe
+
+fast inserter | seconds=1
+steel plate + inserter parts + green circuit
+
+engine unit | seconds=20
+iron plate + iron gear + 2 pipe
+
+car | character: seconds=30
+20 iron plate + 5 steel plate + 8 engine unit
+
+car | seconds=60
+20 iron plate + 5 steel plate + 8 engine unit
+
+military tech card | seconds=40
+5 electronic components + 5 blank tech card + biter research data
+
+electronic components | seconds=8
+2 glass + 2 silicon + 2 plastic bar
+
+8 glass | stonefurnace: seconds=16
+16 sand
+
+8 glass | steelfurnace: seconds=8
+16 sand
+
+9 silicon | stonefurnace: seconds=16
+18 quartz
+
+9 silicon | steelfurnace: seconds=8
+18 quartz
+
+6 quartz | filtrationplant: seconds=2.1
+10 sand + 10 water
+
+filtration plant | seconds=20
+10 glass + 10 steel beam + 3 automation core + 4 engine unit
+
+steel beam | seconds=4
+2 steel plate
+
+10 fuel | fuelrefinery: seconds=10
+60 light oil
+
+10 fuel | fuelrefinery: seconds=10
+6 solid fuel + 50 hydrogen
+
+solid fuel | chemicalplant: seconds=2
+20 petroleum
+
+45 petroleum | oilrefinery: seconds=5
+100 crude oil
+
+20 chlorine + 30 hydrogen | electrolysis: seconds=3
+10 sand + 40 water
+
+2 rail | seconds=1
+2 stone + steel beam
+
+oil pumpjack | seconds=10
+4 steel beam + 10 steel gear + 3 automation core + 10 pipe
+
+chemical plant | seconds=10
+4 steel beam + 5 steel gear + 3 automation core + 5 pipe
+
+fuel refinery | seconds=10
+5 steel plate + 5 iron gear + 5 green circuit + 5 pipe
+
+5 chemical tech card | assembler2: seconds=26.67
+15 glass + 5 red circuit + 5 blank tech card + 50 sulfuric acid
+
+5 biter research data | seconds=80
+5 coke + 10 biomass + 5 steel plate
+
+5 biomass | biolab: seconds=60
+50 petroleum + 50 oxygen
+
+oil refinery | seconds=16
+4 steel beam + 10 steel gear + 5 automation core + 10 pipe + 10 stone brick
+
 
 

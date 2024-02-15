@@ -152,12 +152,13 @@ def interactive_build_net_process(
     # FIXME: This is gross.  The fix is probably to use a richer graph
     # representation, but that entails rewriting a ton of stuff.
     if not edges:
+        (_, outp, _) = output
         return [
             {
-                "edges": [output],
-                "balance": {output: 1},
+                "edges": [outp],
+                "balance": {outp: 1},
                 "leakage": 0.0,
-                "net": output,
+                "net": outp,
             }
         ]
     else:
@@ -174,7 +175,6 @@ def interactive_build_net_process(
 
 i = Ingredients.lookup
 p = Predicates
-ibnp = interactive_build_net_process
 
 
 @curry
@@ -188,12 +188,14 @@ def _try(finder, max_leak, max_repeat):
 
 
 def summarize_ibnp_output(x):
-    x_relevant = [get(["net", "balance"], entry) for entry in x]
     return [
         {
-            "transfer": net.transfer_rate,
+            "transfer": entry["net"].transfer_rate,
             # instance_id is a string; I wish it was a path list
-            "balance": {(k.instance_id, k.process): v for (k, v) in balance.items()},
+            "balance": {(k.process, k.instance_id): v for (k, v) in entry["balance"].items()},
+            "cost": entry["net"].cost,
+            "edges": entry["edges"],
+            "leakage": entry["leakage"],
         }
-        for (net, balance) in x_relevant
+        for entry in x
     ]

@@ -7,6 +7,7 @@ import re
 from cytoolz import unique
 from cytoolz import get
 from cytoolz import curry
+from cytoolz import groupby
 import numpy as np
 from scipy.optimize import milp
 from scipy.optimize import LinearConstraint
@@ -141,6 +142,14 @@ class Predicates:
     @classmethod
     def non_character(cls, process):
         return process.process != "character"
+
+    @classmethod
+    @curry
+    def furnaces_are(cls, which, process):
+        if "furnace" not in process.process:
+            return True
+        else:
+            return which in process.process
 
 
 class ProcessRegistry:
@@ -427,12 +436,33 @@ def _densify(dict_lst):
 
 
 def process_constraint_matrix(edges):
-    return _densify(
-        [
-            {src: src.output_rate[on], dest: -dest.input_rate[on]}
-            for (on, src, dest) in edges
-        ]
-    )
+    # {iron: [(iron, A, B), (iron, A, C), (iron, D, E)]}
+    by_ingredient = groupby(lambda x: x[0], edges)
+
+    # {iron: {sources: [A, D], destinations: [B, C, E]}}
+    transports = {
+        ing: {
+            "sources": list(unique(s for (i, s, d) in by_ingredient[ing])),
+            "destinations": list(unique(d for (i, s, d) in by_ingredient[ing])),
+        }
+        for ing in by_ingredient
+    }
+
+    # [
+    #   {
+    #     A: A_iron_out_rate, B: B_iron_out_rate,
+    #     C: -C_iron_in_rate, D: -D_iron_in_rate, E: -E_iron_in_rate,
+    #   }
+    # ]
+    ingredient_rates = [
+        {
+            **{src: src.output_rate[ing] for src in data["sources"]},
+            **{dest: -dest.input_rate[ing] for dest in data["destinations"]},
+        }
+        for (ing, data) in transports.items()
+    ]
+
+    return _densify(ingredient_rates)
 
 
 def solve_milp(dense, keys, max_leak=0, max_repeat=180):
@@ -525,8 +555,70 @@ def net_process(kind, edges, balance_dict, **kwargs):
     for leaf in leaves:
         net_transfer -= balance_dict[leaf]*leaf.input_rate
 
+    # Subtract dangling inputs
+    for dest in unique(dests):
+        if dest is None:
+            continue
+
+        expected_inputs = dest.inputs.nonzero_components
+        dangling = [
+            inp for inp in expected_inputs
+            if not any(
+                True for (inp_, x, dest_) in edges
+                if (inp_, dest_) == (inp, dest)
+            )
+        ]
+        for inp in dangling:
+            net_transfer -= balance_dict[dest]*dest.inputs.project(inp)
+
+    # Add dangling outputs
+    for src in unique(sources):
+        if src is None:
+            continue
+
+        expected_outputs = src.outputs.nonzero_components
+        dangling = [
+            inp for inp in expected_outputs
+            if not any(
+                True for (inp_, src_, _) in edges
+                if (inp_, src_) == (inp, src)
+            )
+        ]
+        for inp in dangling:
+            net_transfer += balance_dict[src]*src.outputs.project(inp)
+
+    # Scale down duty cycles by propagating up from the leaves
+    duty_cycles = {}
+
+    for (on, src, dest) in edges:
+        duty_cycles[src] = 1
+        duty_cycles[dest] = 1
+
+    sources = leaves
+
+    while sources:
+        for src in sources:
+            parents = [
+                (on, dest) for (on, src_, dest) in edges if src_ == src
+            ]
+            for (on, dest) in parents:
+                provided_rate = (
+                    src.output_rate[on]
+                    * balance_dict[src]
+                    * duty_cycles[src]
+                )
+                desired_rate = (
+                    dest.input_rate[on]
+                    * balance_dict[dest]
+                    # No duty cycle as we are propagating up from leaves; duty
+                    # cycles have not been established for the dest side yet
+                )
+                duty_cycle = min(1, provided_rate/desired_rate)
+                duty_cycles[dest] = min(duty_cycle, duty_cycles[dest])
+        sources = parents
+
     cost = kind.sum(v*k.cost_rate for (k, v) in balance_dict.items())
-    seconds = 1
+    seconds = 1 / duty_cycles[roots[0]]
     return Process.from_transfer(
         net_transfer,
         cost=cost,
