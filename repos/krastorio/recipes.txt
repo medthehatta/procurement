@@ -187,12 +187,6 @@ wood | character: seconds=1
 greenhouse | seconds=20
 20 wood + 20 glass + 10 iron beam + 2 automation core
 
-glass | stonefurnace: seconds=16
-16 sand
-
-glass | steelfurnace: seconds=8
-16 sand
-
 7 sand | crusher: seconds=1
 3 stone
 
@@ -223,7 +217,7 @@ car | seconds=60
 military tech card | seconds=40
 5 electronic components + 5 blank tech card + biter research data
 
-electronic components | seconds=8
+4 electronic components | seconds=8
 2 glass + 2 silicon + 2 plastic bar
 
 8 glass | stonefurnace: seconds=16
@@ -285,6 +279,26 @@ fuel refinery | seconds=10
 
 oil refinery | seconds=16
 4 steel beam + 10 steel gear + 5 automation core + 10 pipe + 10 stone brick
+
+sulfuric acid | chemicalplant: seconds=2
+2 iron plate + 10 sulfur + 200 water
+
+4 sulfur | chemicalplant: seconds=2
+60 water + 60 petroleum
+
+2 crude oil | pumpjack: seconds=1
+
+medium electric pole | seconds=1
+4 copper cable + 4 iron stick + 2 iron beam
+
+big electric pole | seconds=1
+8 copper cable + 8 iron stick + 4 steel beam
+
+red circuit | seconds=8
+4 copper cable + 2 electronic components + 4 green circuit
+
+4 plastic bar | chemicalplant: seconds=2
+2 coal + 40 petroleum
 
 
 
