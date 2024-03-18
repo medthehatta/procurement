@@ -50,6 +50,15 @@ class InteractiveRegistryExplorer:
             else:
                 print("Invalid choice, try again.\n")
 
+    def interactive_pick_with_transfer(self, predicate, part, auto_if_solo):
+        candidates = self.registry.search(predicate, part=part)
+        with_transfer = [(c, c.transfer_rate) for c in candidates]
+        (choice, _) = self.interactive_pick(
+            with_transfer,
+            auto_if_solo=auto_if_solo,
+        )
+        return choice
+
     def interactive_build_edgelist(
         self,
         desired,
@@ -81,8 +90,9 @@ class InteractiveRegistryExplorer:
 
         printable_path = ' > '.join(path)
         print(printable_path)
-        choice = self.interactive_pick(
-            self.registry.search(predicate, part=part),
+        choice = self.interactive_pick_with_transfer(
+            predicate,
+            part=part,
             auto_if_solo=auto_if_solo,
         )
         print("")
